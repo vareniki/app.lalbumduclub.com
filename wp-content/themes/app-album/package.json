@@ -1,0 +1,12 @@
+{
+  "name": "app-album",
+  "version": "1.0.0",
+  "description": "Plantilla WordPress personalizada desde cero, sin constructores visuales.",
+  "scripts": {
+    "dev": "tailwindcss -i ./src/style.css -o ./assets/css/style.css --watch",
+    "build": "tailwindcss -i ./src/style.css -o ./assets/css/style.css --minify"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18"
+  }
+}
