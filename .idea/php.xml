@@ -15,6 +15,12 @@
       <phpcs_by_interpreter asDefaultInterpreter="true" interpreter_id="fed9d47f-d1d9-4630-b907-1f09d286bac6" timeout="30000" />
     </phpcs_settings>
   </component>
+  <component name="PhpIncludePathManager">
+    <include_path>
+      <path value="$PROJECT_DIR$/../admin3.alfainmo.com/wp-includes" />
+      <path value="$PROJECT_DIR$/../admin3.alfainmo.com/wp-admin" />
+    </include_path>
+  </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.3">
     <option name="suggestChangeDefaultLanguageLevel" value="false" />
   </component>

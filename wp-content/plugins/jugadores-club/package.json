@@ -1,0 +1,21 @@
+{
+  "name": "jugadores-club",
+  "version": "1.0.0",
+  "description": "Plugin para el Album",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "tailwindcss -i ./src/style.css -o ./assets/css/tailwind.css --watch",
+    "build": "tailwindcss -i ./src/style.css -o ./assets/css/tailwind.css --minify"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "tailwindcss": "^4.1.18"
+  }
+}

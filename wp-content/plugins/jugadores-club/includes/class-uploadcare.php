@@ -9,15 +9,14 @@
  *   define( 'UPLOADCARE_PUBLIC_KEY', '...' );
  *   define( 'UPLOADCARE_SECRET_KEY', '...' );
  *
- * @package AlbumCustom
- * @since 1.0.0
+ * @package JugadoresClub
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Album_Uploadcare {
+class JC_Uploadcare {
 
 	private const UPLOAD_BASE = 'https://upload.uploadcare.com/';
 	private const REST_BASE   = 'https://api.uploadcare.com/';
@@ -68,7 +67,6 @@ class Album_Uploadcare {
 			return new WP_Error( 'uploadcare_upload', 'No se obtuvo token de subida.', $body );
 		}
 
-		// Polling hasta que el archivo esté listo.
 		return $this->poll_upload_status( $body['token'] );
 	}
 
@@ -153,7 +151,7 @@ class Album_Uploadcare {
 	 */
 	private function poll_upload_status( string $token ) {
 		$max_attempts = 30;
-		$delay        = 1; // segundos
+		$delay        = 1;
 
 		for ( $i = 0; $i < $max_attempts; $i++ ) {
 			sleep( $delay );

@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Tus estilos personalizados aquí */
+@layer components {
+    .btn-primary {
+        @apply bg-blue-500 text-white px-4 py-2 rounded;
+    }
+}
+
+@theme {
+    --default-mono-font-feature-settings: normal;
+    --default-mono-font-variation-settings: normal;
+}

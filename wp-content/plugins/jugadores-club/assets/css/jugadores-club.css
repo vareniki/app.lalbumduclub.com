@@ -1,0 +1,22 @@
+/**
+ * Jugadores Club - Estilos del plugin.
+ *
+ * Estilos mínimos para componentes propios.
+ * Las utilidades de Tailwind las proporciona el tema o builder.
+ */
+
+/* Sortable ghost */
+.club-jugador.sortable-ghost {
+	opacity: 0.3;
+}
+
+/* Sortable drag */
+.club-jugador.sortable-drag {
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+	            0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* Transición al mover jugadores */
+.club-jugador {
+	transition: transform 0.15s ease;
+}
