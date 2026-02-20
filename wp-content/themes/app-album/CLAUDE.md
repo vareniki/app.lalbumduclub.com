@@ -134,16 +134,18 @@ El tema sobreescribe la pantalla de login de WordPress (`functions.php`):
 
 Jugadores del club, organizados por club y categoría.
 
-| Campo          | Tipo             | Notas                              |
-|----------------|------------------|------------------------------------|
-| `id`           | bigint (PK, AI)  |                                    |
-| `club_id`      | bigint           | ID del club                        |
-| `category_uid` | varchar(64)      | Identificador de categoría         |
-| `nombre`       | varchar(255)     | Nombre del jugador                 |
-| `foto_url`     | varchar(500)     | URL de la foto                     |
-| `menu_order`   | int              | Orden de visualización             |
-| `created_at`   | datetime         | Auto                               |
-| `updated_at`   | datetime         | Auto on update                     |
+| Campo          | Tipo            | Notas                      |
+|----------------|-----------------|----------------------------|
+| `id`           | bigint (PK, AI) |                            |
+| `club_id`      | bigint          | ID del club                |
+| `category_uid` | varchar(32)     | Identificador de categoría |
+| `nombre`       | varchar(64)     | Nombre de la persona       |
+| `apellidos`    | varchar(64)     | Apellido de la persona     |
+| `cargo`        | varchar(32)     | Cargo de la persona        |
+| `foto_url`     | varchar(256)    | URL de la foto             |
+| `menu_order`   | int             | Orden de visualización     |
+| `created_at`   | datetime        | Auto                       |
+| `updated_at`   | datetime        | Auto on update             |
 
 Índices: `club_category_index(club_id, category_uid)`, `order_index(menu_order)`
 

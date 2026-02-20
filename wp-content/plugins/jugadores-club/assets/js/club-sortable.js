@@ -93,6 +93,7 @@
 			var row       = target.closest( '.club-jugador' );
 			var list      = target.closest( '.club-jugadores' );
 			if ( ! confirm( '¿Eliminar este jugador?' ) ) return;
+			var hadFoto = !! row.querySelector( '.jugador-foto-trigger img' );
 			ajax( 'album_delete_jugador', {
 				club_id:    clubId,
 				jugador_id: jugadorId,
@@ -100,6 +101,7 @@
 				if ( res.success ) {
 					row.remove();
 					updateCount( list );
+					updateStats( -1, hadFoto ? -1 : 0 );
 				}
 			} );
 			return;
@@ -113,6 +115,38 @@
 			activeJugadorEl = target.closest( '.club-jugador' );
 			fileInput.value = '';
 			fileInput.click();
+			return;
+		}
+
+		// Editar jugador — abrir panel.
+		target = e.target.closest( '.btn-edit-jugador' );
+		if ( target ) {
+			e.preventDefault();
+			e.stopPropagation();
+			var jugadorEl = target.closest( '.club-jugador' );
+			var panel     = jugadorEl.querySelector( '.jugador-edit-panel' );
+			panel.classList.toggle( 'hidden' );
+			if ( ! panel.classList.contains( 'hidden' ) ) {
+				panel.querySelector( '.edit-nombre' ).focus();
+			}
+			return;
+		}
+
+		// Editar jugador — guardar.
+		target = e.target.closest( '.btn-save-edit' );
+		if ( target ) {
+			e.preventDefault();
+			e.stopPropagation();
+			handleSaveEdit( target );
+			return;
+		}
+
+		// Editar jugador — cancelar.
+		target = e.target.closest( '.btn-cancel-edit' );
+		if ( target ) {
+			e.preventDefault();
+			e.stopPropagation();
+			target.closest( '.jugador-edit-panel' ).classList.add( 'hidden' );
 			return;
 		}
 
@@ -166,6 +200,10 @@
 				club_id:    clubId,
 				jugador_id: jugadorId,
 				foto_url:   cdnUrl,
+			}, function ( res ) {
+				if ( res.success ) {
+					updateStats( 0, 1 );
+				}
 			} );
 
 			activeJugadorEl = null;
@@ -195,6 +233,57 @@
 		} );
 	}
 
+	// ─── Edición inline ────────────────────────────────────
+
+	function handleSaveEdit( btn ) {
+		var panel     = btn.closest( '.jugador-edit-panel' );
+		var jugadorEl = panel.closest( '.club-jugador' );
+		var jugadorId = jugadorEl.dataset.jugadorId;
+		var nombre    = panel.querySelector( '.edit-nombre' ).value.trim();
+		var apellidos = panel.querySelector( '.edit-apellidos' ).value.trim();
+		var cargo     = panel.querySelector( '.edit-cargo' ).value.trim();
+
+		if ( ! nombre ) return;
+
+		btn.disabled = true;
+
+		ajax( 'album_update_jugador', {
+			club_id:    clubId,
+			jugador_id: jugadorId,
+			nombre:     nombre,
+			apellidos:  apellidos,
+			cargo:      cargo,
+		}, function ( res ) {
+			btn.disabled = false;
+
+			if ( ! res.success ) return;
+
+			// Actualizar texto visible en la fila.
+			var nombreCompleto = res.data.nombre + ( res.data.apellidos ? ' ' + res.data.apellidos : '' );
+			var nameEl         = jugadorEl.querySelector( '.jugador-nombre-display' );
+			var cargoEl        = jugadorEl.querySelector( '.jugador-cargo-display' );
+
+			if ( nameEl ) nameEl.textContent = nombreCompleto;
+
+			if ( res.data.cargo ) {
+				if ( cargoEl ) {
+					cargoEl.textContent = res.data.cargo;
+					cargoEl.classList.remove( 'hidden' );
+				} else {
+					var span = document.createElement( 'span' );
+					span.className              = 'jugador-cargo-display block text-xs text-gray-400';
+					span.textContent            = res.data.cargo;
+					nameEl.parentNode.appendChild( span );
+				}
+			} else if ( cargoEl ) {
+				cargoEl.textContent = '';
+				cargoEl.classList.add( 'hidden' );
+			}
+
+			panel.classList.add( 'hidden' );
+		} );
+	}
+
 	// ─── Bulk add ──────────────────────────────────────────
 
 	function handleBulkAdd( btn ) {
@@ -205,18 +294,23 @@
 
 		if ( ! raw ) return;
 
-		var nombres = raw.split( /[,\n]/ ).map( function ( s ) {
-			return s.trim();
-		} ).filter( Boolean );
+		var jugadores = raw.split( /\n/ ).map( function ( linea ) {
+			var partes = linea.split( ',' ).map( function ( s ) { return s.trim(); } );
+			return {
+				nombre:    partes[0] || '',
+				apellidos: partes[1] || '',
+				cargo:     partes[2] || '',
+			};
+		} ).filter( function ( j ) { return j.nombre !== ''; } );
 
-		if ( ! nombres.length ) return;
+		if ( ! jugadores.length ) return;
 
 		btn.disabled = true;
 
 		ajax( 'album_bulk_add_jugadores', {
 			club_id:      clubId,
 			category_uid: categoryUid,
-			nombres:      JSON.stringify( nombres ),
+			jugadores:    JSON.stringify( jugadores ),
 		}, function ( res ) {
 			btn.disabled = false;
 
@@ -230,10 +324,39 @@
 
 			textarea.value = '';
 			updateCount( list );
+			updateStats( res.data.length, 0 );
 		} );
 	}
 
 	// ─── Helpers ───────────────────────────────────────────
+
+	function updateStats( deltaTotal, deltaConFoto ) {
+		var statsEl = document.getElementById( 'club-stats-foto' );
+		if ( ! statsEl ) return;
+
+		var conFoto = parseInt( statsEl.dataset.conFoto, 10 ) + deltaConFoto;
+		var total   = parseInt( statsEl.dataset.total, 10 ) + deltaTotal;
+		var pct     = total > 0 ? Math.round( conFoto / total * 100 ) : 0;
+
+		statsEl.dataset.conFoto = conFoto;
+		statsEl.dataset.total   = total;
+
+		// Barra.
+		var bar = statsEl.querySelector( '.stats-bar' );
+		bar.style.width = pct + '%';
+		[ 'bg-green-500', 'bg-blue-500', 'bg-amber-400', 'bg-red-400' ].forEach( function ( c ) { bar.classList.remove( c ); } );
+		bar.classList.add( pct === 100 ? 'bg-green-500' : pct >= 80 ? 'bg-blue-500' : pct >= 50 ? 'bg-amber-400' : 'bg-red-400' );
+
+		// Porcentaje.
+		var pctEl = statsEl.querySelector( '.stats-porcentaje' );
+		pctEl.textContent = pct + '%';
+		[ 'text-green-600', 'text-blue-600', 'text-amber-500', 'text-red-500' ].forEach( function ( c ) { pctEl.classList.remove( c ); } );
+		pctEl.classList.add( pct === 100 ? 'text-green-600' : pct >= 80 ? 'text-blue-600' : pct >= 50 ? 'text-amber-500' : 'text-red-500' );
+
+		// Texto.
+		statsEl.querySelector( '.stats-con-foto' ).textContent = conFoto;
+		statsEl.querySelector( '.stats-total' ).textContent    = total;
+	}
 
 	function updateCount( list ) {
 		var section = list.closest( 'section' );
@@ -249,9 +372,11 @@
 			? '<img class="w-full h-full object-cover" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">'
 			: '<svg class="w-full h-full text-gray-400 p-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-7 9a7 7 0 1 1 14 0H3z" clip-rule="evenodd"/></svg>';
 
-		var hasFoto     = j.foto_url ? true : false;
-		var toggleClass = hasFoto ? '' : ' hidden';
-		var expandedImg = hasFoto ? '<img class="rounded-lg max-w-xs" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">' : '';
+		var hasFoto       = j.foto_url ? true : false;
+		var toggleClass   = hasFoto ? '' : ' hidden';
+		var expandedImg   = hasFoto ? '<img class="rounded-lg max-w-xs" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">' : '';
+		var nombreCompleto = escHTML( j.nombre ) + ( j.apellidos ? ' ' + escHTML( j.apellidos ) : '' );
+		var cargoHTML     = j.cargo ? '<span class="jugador-cargo-display block text-xs text-gray-400">' + escHTML( j.cargo ) + '</span>' : '';
 
 		return '<div class="club-jugador" data-jugador-id="' + j.id + '">'
 			+ '<div class="club-jugador__row flex items-center gap-4 px-6 py-4 bg-white hover:bg-gray-50 transition-colors">'
@@ -259,13 +384,27 @@
 			+ '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>'
 			+ '</span>'
 			+ '<div class="jugador-foto-trigger shrink-0 w-10 h-10 rounded-full overflow-hidden bg-gray-200 cursor-pointer ring-2 ring-transparent hover:ring-blue-400 transition-all" title="Subir foto">' + foto + '</div>'
-			+ '<span class="text-sm font-medium text-gray-800 flex-1">' + escHTML( j.nombre ) + '</span>'
+			+ '<div class="flex-1 min-w-0"><span class="jugador-nombre-display text-sm font-medium text-gray-800">' + nombreCompleto + '</span>' + cargoHTML + '</div>'
 			+ '<button type="button" class="btn-toggle-foto shrink-0 text-gray-300 hover:text-blue-500 transition-colors' + toggleClass + '" title="Ver foto">'
 			+ '<svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>'
+			+ '</button>'
+			+ '<button type="button" class="btn-edit-jugador shrink-0 text-gray-300 hover:text-amber-500 transition-colors" title="Editar jugador">'
+			+ '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/></svg>'
 			+ '</button>'
 			+ '<button type="button" class="btn-delete-jugador shrink-0 text-gray-300 hover:text-red-500 transition-colors" data-jugador-id="' + j.id + '" title="Eliminar jugador">'
 			+ '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>'
 			+ '</button>'
+			+ '</div>'
+			+ '<div class="jugador-edit-panel hidden border-t border-gray-100 px-6 py-4 bg-gray-50">'
+			+ '<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">'
+			+ '<div><label class="block text-xs text-gray-500 mb-1">Nombre</label><input type="text" class="edit-nombre w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" value="' + escAttr( j.nombre ) + '"></div>'
+			+ '<div><label class="block text-xs text-gray-500 mb-1">Apellidos</label><input type="text" class="edit-apellidos w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" value="' + escAttr( j.apellidos || '' ) + '"></div>'
+			+ '<div><label class="block text-xs text-gray-500 mb-1">Cargo</label><input type="text" class="edit-cargo w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" value="' + escAttr( j.cargo || '' ) + '"></div>'
+			+ '</div>'
+			+ '<div class="flex gap-2 mt-3">'
+			+ '<button type="button" class="btn-save-edit bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors">Guardar</button>'
+			+ '<button type="button" class="btn-cancel-edit text-gray-400 hover:text-gray-600 text-sm px-3 py-1.5 rounded-lg transition-colors">Cancelar</button>'
+			+ '</div>'
 			+ '</div>'
 			+ '<div class="jugador-foto-expanded hidden px-6 py-4">' + expandedImg + '</div>'
 			+ '</div>';

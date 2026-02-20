@@ -29,6 +29,7 @@ class Jugadores_Club {
 		add_action( 'wp_ajax_album_delete_jugador', array( __CLASS__, 'ajax_delete' ) );
 		add_action( 'wp_ajax_album_bulk_add_jugadores', array( __CLASS__, 'ajax_bulk_add' ) );
 		add_action( 'wp_ajax_album_update_jugador_foto', array( __CLASS__, 'ajax_update_foto' ) );
+		add_action( 'wp_ajax_album_update_jugador', array( __CLASS__, 'ajax_update_jugador' ) );
 	}
 
 	/**
@@ -110,14 +111,27 @@ class Jugadores_Club {
 												</svg>
 											<?php endif; ?>
 										</div>
-										<!-- Nombre -->
-										<span class="text-sm font-medium text-gray-800 flex-1"><?php echo esc_html( $jugador->nombre ); ?></span>
+										<!-- Nombre, apellidos y cargo -->
+										<div class="flex-1 min-w-0">
+											<span class="jugador-nombre-display text-sm font-medium text-gray-800"><?php echo esc_html( trim( $jugador->nombre . ' ' . $jugador->apellidos ) ); ?></span>
+											<?php if ( $jugador->cargo ) : ?>
+												- <span class="jugador-cargo-display block text-xs text-gray-400"><?php echo esc_html( strtoupper( $jugador->cargo ) ); ?></span>
+											<?php endif; ?>
+										</div>
 										<!-- Toggle foto expandida -->
 										<button type="button"
 										        class="btn-toggle-foto shrink-0 text-gray-300 hover:text-blue-500 transition-colors <?php echo $jugador->foto_url ? '' : 'hidden'; ?>"
 										        title="Ver foto">
 											<svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+											</svg>
+										</button>
+										<!-- Editar -->
+										<button type="button"
+										        class="btn-edit-jugador shrink-0 text-gray-300 hover:text-amber-500 transition-colors"
+										        title="Editar jugador">
+											<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
 											</svg>
 										</button>
 										<!-- Eliminar -->
@@ -129,6 +143,34 @@ class Jugadores_Club {
 												<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
 											</svg>
 										</button>
+									</div>
+									<!-- Panel de edición -->
+									<div class="jugador-edit-panel hidden border-t border-gray-100 px-6 py-4 bg-gray-50">
+										<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+											<div>
+												<label class="block text-xs text-gray-500 mb-1">Nombre</label>
+												<input type="text" class="edit-nombre w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+												       value="<?php echo esc_attr( $jugador->nombre ); ?>">
+											</div>
+											<div>
+												<label class="block text-xs text-gray-500 mb-1">Apellidos</label>
+												<input type="text" class="edit-apellidos w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+												       value="<?php echo esc_attr( $jugador->apellidos ); ?>">
+											</div>
+											<div>
+												<label class="block text-xs text-gray-500 mb-1">Cargo</label>
+												<input type="text" class="edit-cargo w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+												       value="<?php echo esc_attr( $jugador->cargo ); ?>">
+											</div>
+										</div>
+										<div class="flex gap-2 mt-3">
+											<button type="button" class="btn-save-edit bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors">
+												Guardar
+											</button>
+											<button type="button" class="btn-cancel-edit text-gray-400 hover:text-gray-600 text-sm px-3 py-1.5 rounded-lg transition-colors">
+												Cancelar
+											</button>
+										</div>
 									</div>
 									<!-- Foto expandida -->
 									<div class="jugador-foto-expanded hidden px-6 py-4">
@@ -147,7 +189,7 @@ class Jugadores_Club {
 					<div class="bulk-add border-t border-gray-200 px-6 py-4">
 						<textarea class="bulk-add__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-y"
 						          rows="2"
-						          placeholder="Nombres separados por coma o salto de línea..."
+						          placeholder="Un jugador por línea: nombre, apellidos, cargo"
 						          data-category-uid="<?php echo esc_attr( $category_uid ); ?>"></textarea>
 						<button type="button"
 						        class="btn-bulk-add mt-2 inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
@@ -162,6 +204,53 @@ class Jugadores_Club {
 
 			<?php endforeach; ?>
 		</div>
+
+		<?php
+		// ── Estadísticas de fotos ─────────────────────────────
+		$stats = $wpdb->get_row( $wpdb->prepare(
+			"SELECT COUNT(*) AS total,
+			        SUM( CASE WHEN foto_url != '' THEN 1 ELSE 0 END ) AS con_foto
+			 FROM {$table}
+			 WHERE club_id = %d",
+			$club_id
+		) );
+
+		$total      = (int) ( $stats->total ?? 0 );
+		$con_foto   = (int) ( $stats->con_foto ?? 0 );
+		$porcentaje = $total > 0 ? round( $con_foto / $total * 100 ) : 0;
+
+		$bar_color  = $porcentaje === 100 ? 'bg-green-500' : ( $porcentaje >= 80 ? 'bg-blue-500' : ( $porcentaje >= 50 ? 'bg-amber-400' : 'bg-red-400' ) );
+		$pct_color  = $porcentaje === 100 ? 'text-green-600' : ( $porcentaje >= 80 ? 'text-blue-600' : ( $porcentaje >= 50 ? 'text-amber-500' : 'text-red-500' ) );
+		?>
+
+		<?php if ( $total > 0 ) : ?>
+		<div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-5"
+		     id="club-stats-foto"
+		     data-con-foto="<?php echo esc_attr( $con_foto ); ?>"
+		     data-total="<?php echo esc_attr( $total ); ?>">
+			<div class="flex items-center justify-between mb-3">
+				<div class="flex items-center gap-2 text-gray-500">
+					<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 0 1 2-2h.93a2 2 0 0 0 1.664-.89l.812-1.22A2 2 0 0 1 10.07 4h3.86a2 2 0 0 1 1.664.89l.812 1.22A2 2 0 0 0 18.07 7H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+					</svg>
+					<span class="text-sm font-medium text-gray-700">Fotos del álbum</span>
+				</div>
+				<span class="stats-porcentaje text-2xl font-bold <?php echo $pct_color; ?>"><?php echo $porcentaje; ?>%</span>
+			</div>
+			<div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+				<div class="stats-bar h-2.5 rounded-full transition-all duration-500 <?php echo $bar_color; ?>"
+				     style="width: <?php echo $porcentaje; ?>%"></div>
+			</div>
+			<p class="stats-label mt-2 text-xs text-gray-400">
+				<span class="stats-con-foto font-medium text-gray-500"><?php echo $con_foto; ?></span>
+				miembros de
+				<span class="stats-total"><?php echo $total; ?></span>
+				tienen foto
+			</p>
+		</div>
+		<?php endif; ?>
+
 		<?php
 		return ob_get_clean();
 	}
@@ -304,9 +393,9 @@ class Jugadores_Club {
 
 		$club_id      = absint( $_POST['club_id'] ?? 0 );
 		$category_uid = sanitize_text_field( $_POST['category_uid'] ?? '' );
-		$nombres      = json_decode( stripslashes( $_POST['nombres'] ?? '' ), true );
+		$jugadores    = json_decode( stripslashes( $_POST['jugadores'] ?? '' ), true );
 
-		if ( ! $club_id || ! $category_uid || ! is_array( $nombres ) || empty( $nombres ) ) {
+		if ( ! $club_id || ! $category_uid || ! is_array( $jugadores ) || empty( $jugadores ) ) {
 			wp_send_json_error( 'Datos inválidos.' );
 		}
 
@@ -321,8 +410,11 @@ class Jugadores_Club {
 
 		$inserted = array();
 
-		foreach ( $nombres as $nombre ) {
-			$nombre = sanitize_text_field( trim( $nombre ) );
+		foreach ( $jugadores as $jugador ) {
+			$nombre    = sanitize_text_field( trim( $jugador['nombre'] ?? '' ) );
+			$apellidos = sanitize_text_field( trim( $jugador['apellidos'] ?? '' ) );
+			$cargo     = sanitize_text_field( trim( $jugador['cargo'] ?? '' ) );
+
 			if ( '' === $nombre ) {
 				continue;
 			}
@@ -333,14 +425,18 @@ class Jugadores_Club {
 				'club_id'      => $club_id,
 				'category_uid' => $category_uid,
 				'nombre'       => $nombre,
+				'apellidos'    => $apellidos,
+				'cargo'        => $cargo,
 				'foto_url'     => '',
 				'menu_order'   => $max_order,
-			), array( '%d', '%s', '%s', '%s', '%d' ) );
+			), array( '%d', '%s', '%s', '%s', '%s', '%s', '%d' ) );
 
 			$inserted[] = array(
-				'id'       => $wpdb->insert_id,
-				'nombre'   => $nombre,
-				'foto_url' => '',
+				'id'        => $wpdb->insert_id,
+				'nombre'    => $nombre,
+				'apellidos' => $apellidos,
+				'cargo'     => $cargo,
+				'foto_url'  => '',
 			);
 		}
 
@@ -379,5 +475,49 @@ class Jugadores_Club {
 		}
 
 		wp_send_json_success( array( 'foto_url' => $foto_url ) );
+	}
+
+	/**
+	 * Actualiza nombre, apellidos y cargo de un jugador.
+	 */
+	public static function ajax_update_jugador(): void {
+		check_ajax_referer( 'album_club_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		$club_id    = absint( $_POST['club_id'] ?? 0 );
+		$jugador_id = absint( $_POST['jugador_id'] ?? 0 );
+		$nombre     = sanitize_text_field( trim( $_POST['nombre'] ?? '' ) );
+		$apellidos  = sanitize_text_field( trim( $_POST['apellidos'] ?? '' ) );
+		$cargo      = sanitize_text_field( trim( $_POST['cargo'] ?? '' ) );
+
+		if ( ! $club_id || ! $jugador_id || '' === $nombre ) {
+			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		global $wpdb;
+		$updated = $wpdb->update(
+			$wpdb->prefix . 'club_jugadores',
+			array(
+				'nombre'    => $nombre,
+				'apellidos' => $apellidos,
+				'cargo'     => $cargo,
+			),
+			array( 'id' => $jugador_id, 'club_id' => $club_id ),
+			array( '%s', '%s', '%s' ),
+			array( '%d', '%d' )
+		);
+
+		if ( false === $updated ) {
+			wp_send_json_error( 'Error al actualizar.' );
+		}
+
+		wp_send_json_success( array(
+			'nombre'    => $nombre,
+			'apellidos' => $apellidos,
+			'cargo'     => $cargo,
+		) );
 	}
 }
