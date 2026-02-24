@@ -93,7 +93,7 @@
 			var row       = target.closest( '.club-jugador' );
 			var list      = target.closest( '.club-jugadores' );
 			if ( ! confirm( '¿Eliminar este jugador?' ) ) return;
-			var hadFoto = !! row.querySelector( '.jugador-foto-trigger img' );
+			var hadFoto = !! row.querySelector( '.jugador-foto-trigger img' ) || !! row.dataset.nombreFoto;
 			ajax( 'album_delete_jugador', {
 				club_id:    clubId,
 				jugador_id: jugadorId,
@@ -158,6 +158,15 @@
 			handleBulkAdd( target );
 			return;
 		}
+
+		// Single add.
+		target = e.target.closest( '.btn-single-add' );
+		if ( target ) {
+			e.preventDefault();
+			e.stopPropagation();
+			handleSingleAdd( target );
+			return;
+		}
 	} );
 
 	// ─── Upload handler ────────────────────────────────────
@@ -165,9 +174,10 @@
 	fileInput.addEventListener( 'change', function () {
 		if ( ! fileInput.files.length || ! activeJugadorEl ) return;
 
-		var file      = fileInput.files[0];
-		var jugadorId = activeJugadorEl.dataset.jugadorId;
-		var trigger   = activeJugadorEl.querySelector( '.jugador-foto-trigger' );
+		var file             = fileInput.files[0];
+		var jugadorId        = activeJugadorEl.dataset.jugadorId;
+		var trigger          = activeJugadorEl.querySelector( '.jugador-foto-trigger' );
+		var hadFotoYa        = !! activeJugadorEl.querySelector( '.jugador-foto-trigger img' ) || !! activeJugadorEl.dataset.nombreFoto;
 
 		trigger.classList.add( 'opacity-50', 'pointer-events-none' );
 
@@ -201,7 +211,7 @@
 				jugador_id: jugadorId,
 				foto_url:   cdnUrl,
 			}, function ( res ) {
-				if ( res.success ) {
+				if ( res.success && ! hadFotoYa ) {
 					updateStats( 0, 1 );
 				}
 			} );
@@ -236,23 +246,27 @@
 	// ─── Edición inline ────────────────────────────────────
 
 	function handleSaveEdit( btn ) {
-		var panel     = btn.closest( '.jugador-edit-panel' );
-		var jugadorEl = panel.closest( '.club-jugador' );
-		var jugadorId = jugadorEl.dataset.jugadorId;
-		var nombre    = panel.querySelector( '.edit-nombre' ).value.trim();
-		var apellidos = panel.querySelector( '.edit-apellidos' ).value.trim();
-		var cargo     = panel.querySelector( '.edit-cargo' ).value.trim();
+		var panel      = btn.closest( '.jugador-edit-panel' );
+		var jugadorEl  = panel.closest( '.club-jugador' );
+		var jugadorId  = jugadorEl.dataset.jugadorId;
+		var nombre     = panel.querySelector( '.edit-nombre' ).value.trim();
+		var apellidos  = panel.querySelector( '.edit-apellidos' ).value.trim();
+		var cargo      = panel.querySelector( '.edit-cargo' ).value.trim();
+		var nombreFoto = panel.querySelector( '.edit-nombre-foto' ).value.trim();
 
 		if ( ! nombre ) return;
+
+		var hadFoto = !! jugadorEl.querySelector( '.jugador-foto-trigger img' ) || !! jugadorEl.dataset.nombreFoto;
 
 		btn.disabled = true;
 
 		ajax( 'album_update_jugador', {
-			club_id:    clubId,
-			jugador_id: jugadorId,
-			nombre:     nombre,
-			apellidos:  apellidos,
-			cargo:      cargo,
+			club_id:     clubId,
+			jugador_id:  jugadorId,
+			nombre:      nombre,
+			apellidos:   apellidos,
+			cargo:       cargo,
+			nombre_foto: nombreFoto,
 		}, function ( res ) {
 			btn.disabled = false;
 
@@ -271,13 +285,36 @@
 					cargoEl.classList.remove( 'hidden' );
 				} else {
 					var span = document.createElement( 'span' );
-					span.className              = 'jugador-cargo-display block text-xs text-gray-400';
-					span.textContent            = res.data.cargo;
+					span.className   = 'jugador-cargo-display text-xs text-gray-400';
+					span.textContent = res.data.cargo;
 					nameEl.parentNode.appendChild( span );
 				}
 			} else if ( cargoEl ) {
 				cargoEl.textContent = '';
 				cargoEl.classList.add( 'hidden' );
+			}
+
+			// Actualizar data-nombre-foto, texto visible y estadísticas.
+			var nuevoNombreFoto  = res.data.nombre_foto || '';
+			var hasFoto          = !! jugadorEl.querySelector( '.jugador-foto-trigger img' ) || !! nuevoNombreFoto;
+			if ( hadFoto !== hasFoto ) {
+				updateStats( 0, hasFoto ? 1 : -1 );
+			}
+			jugadorEl.dataset.nombreFoto = nuevoNombreFoto;
+
+			// Actualizar el span de nombre_foto en la fila.
+			var nombreFotoEl = jugadorEl.querySelector( '.jugador-nombre-foto-display' );
+			if ( nuevoNombreFoto ) {
+				if ( nombreFotoEl ) {
+					nombreFotoEl.textContent = '(' + nuevoNombreFoto + ')';
+				} else {
+					var nfSpan = document.createElement( 'span' );
+					nfSpan.className   = 'jugador-nombre-foto-display text-xs text-gray-400';
+					nfSpan.textContent = '(' + nuevoNombreFoto + ')';
+					( cargoEl || nameEl ).parentNode.appendChild( nfSpan );
+				}
+			} else if ( nombreFotoEl ) {
+				nombreFotoEl.remove();
 			}
 
 			panel.classList.add( 'hidden' );
@@ -325,6 +362,52 @@
 			textarea.value = '';
 			updateCount( list );
 			updateStats( res.data.length, 0 );
+		} );
+	}
+
+	// ─── Single add ───────────────────────────────────────
+
+	function handleSingleAdd( btn ) {
+		var formEl      = btn.closest( '.single-add' );
+		var categoryUid = formEl.dataset.categoryUid;
+		var nombre      = formEl.querySelector( '.single-add__nombre' ).value.trim();
+		var apellidos   = formEl.querySelector( '.single-add__apellidos' ).value.trim();
+		var cargo       = formEl.querySelector( '.single-add__cargo' ).value.trim();
+		var nombreFoto  = formEl.querySelector( '.single-add__nombre-foto' ).value.trim();
+
+		if ( ! nombre ) {
+			formEl.querySelector( '.single-add__nombre' ).focus();
+			return;
+		}
+
+		btn.disabled = true;
+
+		ajax( 'album_add_jugador', {
+			club_id:      clubId,
+			category_uid: categoryUid,
+			nombre:       nombre,
+			apellidos:    apellidos,
+			cargo:        cargo,
+			nombre_foto:  nombreFoto,
+		}, function ( res ) {
+			btn.disabled = false;
+
+			if ( ! res.success ) return;
+
+			var section = formEl.closest( 'section' );
+			var list    = section.querySelector( '.club-jugadores' );
+
+			list.insertAdjacentHTML( 'beforeend', playerHTML( res.data ) );
+			initSortables();
+			updateCount( list );
+			updateStats( 1, res.data.nombre_foto || res.data.foto_url ? 1 : 0 );
+
+			// Limpiar formulario.
+			formEl.querySelector( '.single-add__nombre' ).value      = '';
+			formEl.querySelector( '.single-add__apellidos' ).value   = '';
+			formEl.querySelector( '.single-add__cargo' ).value       = '';
+			formEl.querySelector( '.single-add__nombre-foto' ).value = '';
+			formEl.querySelector( '.single-add__nombre' ).focus();
 		} );
 	}
 
@@ -376,15 +459,16 @@
 		var toggleClass   = hasFoto ? '' : ' hidden';
 		var expandedImg   = hasFoto ? '<img class="rounded-lg max-w-xs" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">' : '';
 		var nombreCompleto = escHTML( j.nombre ) + ( j.apellidos ? ' ' + escHTML( j.apellidos ) : '' );
-		var cargoHTML     = j.cargo ? '<span class="jugador-cargo-display block text-xs text-gray-400">' + escHTML( j.cargo ) + '</span>' : '';
+		var cargoHTML      = j.cargo ? '<span class="jugador-cargo-display text-xs text-gray-400">' + escHTML( j.cargo ) + '</span>' : '';
+	var nombreFotoHTML = j.nombre_foto ? '<span class="jugador-nombre-foto-display text-xs text-gray-400">(' + escHTML( j.nombre_foto ) + ')</span>' : '';
 
-		return '<div class="club-jugador" data-jugador-id="' + j.id + '">'
+		return '<div class="club-jugador" data-jugador-id="' + j.id + '" data-nombre-foto="' + escAttr( j.nombre_foto || '' ) + '">'
 			+ '<div class="club-jugador__row flex items-center gap-4 px-6 py-4 bg-white hover:bg-gray-50 transition-colors">'
 			+ '<span class="drag-handle shrink-0 text-gray-300 hover:text-gray-500 transition-colors cursor-grab active:cursor-grabbing">'
 			+ '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>'
 			+ '</span>'
 			+ '<div class="jugador-foto-trigger shrink-0 w-10 h-10 rounded-full overflow-hidden bg-gray-200 cursor-pointer ring-2 ring-transparent hover:ring-blue-400 transition-all" title="Subir foto">' + foto + '</div>'
-			+ '<div class="flex-1 min-w-0"><span class="jugador-nombre-display text-sm font-medium text-gray-800">' + nombreCompleto + '</span>' + cargoHTML + '</div>'
+			+ '<div class="flex-1 min-w-0"><span class="jugador-nombre-display text-sm font-medium text-gray-800">' + nombreCompleto + '</span>' + cargoHTML + nombreFotoHTML + '</div>'
 			+ '<button type="button" class="btn-toggle-foto shrink-0 text-gray-300 hover:text-blue-500 transition-colors' + toggleClass + '" title="Ver foto">'
 			+ '<svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>'
 			+ '</button>'
@@ -400,6 +484,11 @@
 			+ '<div><label class="block text-xs text-gray-500 mb-1">Nombre</label><input type="text" class="edit-nombre w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" value="' + escAttr( j.nombre ) + '"></div>'
 			+ '<div><label class="block text-xs text-gray-500 mb-1">Apellidos</label><input type="text" class="edit-apellidos w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" value="' + escAttr( j.apellidos || '' ) + '"></div>'
 			+ '<div><label class="block text-xs text-gray-500 mb-1">Cargo</label><input type="text" class="edit-cargo w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" value="' + escAttr( j.cargo || '' ) + '"></div>'
+			+ '</div>'
+			+ '<div class="mt-3">'
+			+ '<label class="block text-xs text-gray-500 mb-1">Nombre foto</label>'
+			+ '<input type="text" class="edit-nombre-foto w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" maxlength="32" placeholder="ej. 9999.jpg" value="' + escAttr( j.nombre_foto || '' ) + '">'
+			+ '<p class="mt-1 text-xs text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>'
 			+ '</div>'
 			+ '<div class="flex gap-2 mt-3">'
 			+ '<button type="button" class="btn-save-edit bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors">Guardar</button>'

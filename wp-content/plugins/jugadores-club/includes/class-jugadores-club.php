@@ -30,6 +30,7 @@ class Jugadores_Club {
 		add_action( 'wp_ajax_album_bulk_add_jugadores', array( __CLASS__, 'ajax_bulk_add' ) );
 		add_action( 'wp_ajax_album_update_jugador_foto', array( __CLASS__, 'ajax_update_foto' ) );
 		add_action( 'wp_ajax_album_update_jugador', array( __CLASS__, 'ajax_update_jugador' ) );
+		add_action( 'wp_ajax_album_add_jugador', array( __CLASS__, 'ajax_add_jugador' ) );
 	}
 
 	/**
@@ -89,7 +90,8 @@ class Jugadores_Club {
 						<?php if ( $jugadores ) : ?>
 							<?php foreach ( $jugadores as $jugador ) : ?>
 								<div class="club-jugador"
-								     data-jugador-id="<?php echo esc_attr( $jugador->id ); ?>">
+								     data-jugador-id="<?php echo esc_attr( $jugador->id ); ?>"
+								     data-nombre-foto="<?php echo esc_attr( $jugador->nombre_foto ?? '' ); ?>">
 									<!-- Fila principal -->
 									<div class="club-jugador__row flex items-center gap-4 px-6 py-4 bg-white hover:bg-gray-50 transition-colors">
 										<!-- Handle -->
@@ -103,7 +105,7 @@ class Jugadores_Club {
 										     title="Subir foto">
 											<?php if ( $jugador->foto_url ) : ?>
 												<img class="w-full h-full object-cover"
-												     src="<?php echo esc_url( $jugador->foto_url ); ?>"
+												     src="<?php echo esc_url( $jugador->foto_url . '-/preview/100x66/' ); ?>"
 												     alt="<?php echo esc_attr( $jugador->nombre ); ?>">
 											<?php else : ?>
 												<svg class="w-full h-full text-gray-400 p-2" fill="currentColor" viewBox="0 0 20 20">
@@ -115,7 +117,10 @@ class Jugadores_Club {
 										<div class="flex-1 min-w-0">
 											<span class="jugador-nombre-display text-sm font-medium text-gray-800"><?php echo esc_html( trim( $jugador->nombre . ' ' . $jugador->apellidos ) ); ?></span>
 											<?php if ( $jugador->cargo ) : ?>
-												- <span class="jugador-cargo-display block text-xs text-gray-400"><?php echo esc_html( strtoupper( $jugador->cargo ) ); ?></span>
+												- <span class="jugador-cargo-display text-xs text-gray-400"><?php echo esc_html( strtoupper( $jugador->cargo ) ); ?></span>
+											<?php endif; ?>
+											<?php if ( $jugador->nombre_foto ) : ?>
+												<span class="jugador-nombre-foto-display text-xs text-sky-800">(<?php echo esc_html( $jugador->nombre_foto ); ?>)</span>
 											<?php endif; ?>
 										</div>
 										<!-- Toggle foto expandida -->
@@ -163,6 +168,14 @@ class Jugadores_Club {
 												       value="<?php echo esc_attr( $jugador->cargo ); ?>">
 											</div>
 										</div>
+										<div class="mt-3">
+											<label class="block text-xs text-gray-500 mb-1">Nombre foto</label>
+											<input type="text" class="edit-nombre-foto w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+											       maxlength="32"
+											       placeholder="ej. 9999.jpg"
+											       value="<?php echo esc_attr( $jugador->nombre_foto ?? '' ); ?>">
+											<p class="mt-1 text-xs text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>
+										</div>
 										<div class="flex gap-2 mt-3">
 											<button type="button" class="btn-save-edit bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors">
 												Guardar
@@ -200,6 +213,38 @@ class Jugadores_Club {
 							Añadir en bulk
 						</button>
 					</div>
+					<!-- Single add -->
+					<div class="single-add border-t border-gray-200 px-6 py-4"
+					     data-category-uid="<?php echo esc_attr( $category_uid ); ?>">
+						<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+							<div>
+								<label class="block text-xs text-gray-500 mb-1">Nombre</label>
+								<input type="text" class="single-add__nombre w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Nombre">
+							</div>
+							<div>
+								<label class="block text-xs text-gray-500 mb-1">Apellidos</label>
+								<input type="text" class="single-add__apellidos w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Apellidos">
+							</div>
+							<div>
+								<label class="block text-xs text-gray-500 mb-1">Cargo</label>
+								<input type="text" class="single-add__cargo w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Cargo">
+							</div>
+						</div>
+						<div class="mt-3">
+							<label class="block text-xs text-gray-500 mb-1">Nombre foto</label>
+							<input type="text" class="single-add__nombre-foto w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" maxlength="32" placeholder="ej. 9999.jpg">
+							<p class="mt-1 text-xs text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>
+						</div>
+						<div class="mt-3">
+							<button type="button"
+							        class="btn-single-add inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+								</svg>
+								Añadir jugador
+							</button>
+						</div>
+					</div>
 				</section>
 
 			<?php endforeach; ?>
@@ -209,7 +254,7 @@ class Jugadores_Club {
 		// ── Estadísticas de fotos ─────────────────────────────
 		$stats = $wpdb->get_row( $wpdb->prepare(
 			"SELECT COUNT(*) AS total,
-			        SUM( CASE WHEN foto_url != '' THEN 1 ELSE 0 END ) AS con_foto
+			        SUM( CASE WHEN foto_url != '' OR ( nombre_foto IS NOT NULL AND nombre_foto != '' ) THEN 1 ELSE 0 END ) AS con_foto
 			 FROM {$table}
 			 WHERE club_id = %d",
 			$club_id
@@ -489,9 +534,11 @@ class Jugadores_Club {
 
 		$club_id    = absint( $_POST['club_id'] ?? 0 );
 		$jugador_id = absint( $_POST['jugador_id'] ?? 0 );
-		$nombre     = sanitize_text_field( trim( $_POST['nombre'] ?? '' ) );
-		$apellidos  = sanitize_text_field( trim( $_POST['apellidos'] ?? '' ) );
-		$cargo      = sanitize_text_field( trim( $_POST['cargo'] ?? '' ) );
+		$nombre      = sanitize_text_field( trim( $_POST['nombre'] ?? '' ) );
+		$apellidos   = sanitize_text_field( trim( $_POST['apellidos'] ?? '' ) );
+		$cargo       = sanitize_text_field( trim( $_POST['cargo'] ?? '' ) );
+		$nombre_foto = sanitize_text_field( trim( $_POST['nombre_foto'] ?? '' ) );
+		$nombre_foto = substr( $nombre_foto, 0, 32 );
 
 		if ( ! $club_id || ! $jugador_id || '' === $nombre ) {
 			wp_send_json_error( 'Datos inválidos.' );
@@ -501,12 +548,13 @@ class Jugadores_Club {
 		$updated = $wpdb->update(
 			$wpdb->prefix . 'club_jugadores',
 			array(
-				'nombre'    => $nombre,
-				'apellidos' => $apellidos,
-				'cargo'     => $cargo,
+				'nombre'      => $nombre,
+				'apellidos'   => $apellidos,
+				'cargo'       => $cargo,
+				'nombre_foto' => '' !== $nombre_foto ? $nombre_foto : null,
 			),
 			array( 'id' => $jugador_id, 'club_id' => $club_id ),
-			array( '%s', '%s', '%s' ),
+			array( '%s', '%s', '%s', '' !== $nombre_foto ? '%s' : null ),
 			array( '%d', '%d' )
 		);
 
@@ -515,9 +563,66 @@ class Jugadores_Club {
 		}
 
 		wp_send_json_success( array(
-			'nombre'    => $nombre,
-			'apellidos' => $apellidos,
-			'cargo'     => $cargo,
+			'nombre'      => $nombre,
+			'apellidos'   => $apellidos,
+			'cargo'       => $cargo,
+			'nombre_foto' => $nombre_foto,
+		) );
+	}
+
+	/**
+	 * Añade un único jugador con todos sus campos.
+	 */
+	public static function ajax_add_jugador(): void {
+		check_ajax_referer( 'album_club_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		$club_id      = absint( $_POST['club_id'] ?? 0 );
+		$category_uid = sanitize_text_field( trim( $_POST['category_uid'] ?? '' ) );
+		$nombre       = sanitize_text_field( trim( $_POST['nombre'] ?? '' ) );
+		$apellidos    = sanitize_text_field( trim( $_POST['apellidos'] ?? '' ) );
+		$cargo        = sanitize_text_field( trim( $_POST['cargo'] ?? '' ) );
+		$nombre_foto  = sanitize_text_field( trim( $_POST['nombre_foto'] ?? '' ) );
+		$nombre_foto  = substr( $nombre_foto, 0, 32 );
+
+		if ( ! $club_id || ! $category_uid || '' === $nombre ) {
+			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		global $wpdb;
+		$table = $wpdb->prefix . 'club_jugadores';
+
+		$max_order = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COALESCE(MAX(menu_order), -1) FROM {$table} WHERE club_id = %d AND category_uid = %s",
+			$club_id,
+			$category_uid
+		) );
+
+		$wpdb->insert( $table, array(
+			'club_id'      => $club_id,
+			'category_uid' => $category_uid,
+			'nombre'       => $nombre,
+			'apellidos'    => $apellidos,
+			'cargo'        => $cargo,
+			'nombre_foto'  => '' !== $nombre_foto ? $nombre_foto : null,
+			'foto_url'     => '',
+			'menu_order'   => $max_order + 1,
+		), array( '%d', '%s', '%s', '%s', '%s', '' !== $nombre_foto ? '%s' : null, '%s', '%d' ) );
+
+		if ( ! $wpdb->insert_id ) {
+			wp_send_json_error( 'Error al insertar.' );
+		}
+
+		wp_send_json_success( array(
+			'id'         => $wpdb->insert_id,
+			'nombre'     => $nombre,
+			'apellidos'  => $apellidos,
+			'cargo'      => $cargo,
+			'nombre_foto' => $nombre_foto,
+			'foto_url'   => '',
 		) );
 	}
 }
