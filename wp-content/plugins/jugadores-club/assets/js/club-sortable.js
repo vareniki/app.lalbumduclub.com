@@ -273,49 +273,27 @@
 			if ( ! res.success ) return;
 
 			// Actualizar texto visible en la fila.
-			var nombreCompleto = res.data.nombre + ( res.data.apellidos ? ' ' + res.data.apellidos : '' );
-			var nameEl         = jugadorEl.querySelector( '.jugador-nombre-display' );
-			var cargoEl        = jugadorEl.querySelector( '.jugador-cargo-display' );
+			var nombreCompleto  = res.data.nombre + ( res.data.apellidos ? ' ' + res.data.apellidos : '' );
+			var nuevoNombreFoto = res.data.nombre_foto || '';
+			var displayEl       = jugadorEl.querySelector( '.flex-1.min-w-0' );
 
-			if ( nameEl ) nameEl.textContent = nombreCompleto;
-
-			if ( res.data.cargo ) {
-				if ( cargoEl ) {
-					cargoEl.textContent = res.data.cargo;
-					cargoEl.classList.remove( 'hidden' );
-				} else {
-					var span = document.createElement( 'span' );
-					span.className   = 'jugador-cargo-display text-xs text-gray-400';
-					span.textContent = res.data.cargo;
-					nameEl.parentNode.appendChild( span );
+			if ( displayEl ) {
+				var html = '<span class="jugador-nombre-display text-sm font-medium text-gray-800">' + escHTML( nombreCompleto ) + '</span>';
+				if ( res.data.cargo ) {
+					html += ' - <span class="jugador-cargo-display text-xs text-gray-400">' + escHTML( res.data.cargo ) + '</span>';
 				}
-			} else if ( cargoEl ) {
-				cargoEl.textContent = '';
-				cargoEl.classList.add( 'hidden' );
+				if ( nuevoNombreFoto ) {
+					html += ' <span class="jugador-nombre-foto-display text-xs text-sky-800">(' + escHTML( nuevoNombreFoto ) + ')</span>';
+				}
+				displayEl.innerHTML = html;
 			}
 
-			// Actualizar data-nombre-foto, texto visible y estadísticas.
-			var nuevoNombreFoto  = res.data.nombre_foto || '';
-			var hasFoto          = !! jugadorEl.querySelector( '.jugador-foto-trigger img' ) || !! nuevoNombreFoto;
+			// Actualizar data-nombre-foto y estadísticas.
+			var hasFoto = !! jugadorEl.querySelector( '.jugador-foto-trigger img' ) || !! nuevoNombreFoto;
 			if ( hadFoto !== hasFoto ) {
 				updateStats( 0, hasFoto ? 1 : -1 );
 			}
 			jugadorEl.dataset.nombreFoto = nuevoNombreFoto;
-
-			// Actualizar el span de nombre_foto en la fila.
-			var nombreFotoEl = jugadorEl.querySelector( '.jugador-nombre-foto-display' );
-			if ( nuevoNombreFoto ) {
-				if ( nombreFotoEl ) {
-					nombreFotoEl.textContent = '(' + nuevoNombreFoto + ')';
-				} else {
-					var nfSpan = document.createElement( 'span' );
-					nfSpan.className   = 'jugador-nombre-foto-display text-xs text-gray-400';
-					nfSpan.textContent = '(' + nuevoNombreFoto + ')';
-					( cargoEl || nameEl ).parentNode.appendChild( nfSpan );
-				}
-			} else if ( nombreFotoEl ) {
-				nombreFotoEl.remove();
-			}
 
 			panel.classList.add( 'hidden' );
 		} );
@@ -459,8 +437,8 @@
 		var toggleClass   = hasFoto ? '' : ' hidden';
 		var expandedImg   = hasFoto ? '<img class="rounded-lg max-w-xs" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">' : '';
 		var nombreCompleto = escHTML( j.nombre ) + ( j.apellidos ? ' ' + escHTML( j.apellidos ) : '' );
-		var cargoHTML      = j.cargo ? '<span class="jugador-cargo-display text-xs text-gray-400">' + escHTML( j.cargo ) + '</span>' : '';
-	var nombreFotoHTML = j.nombre_foto ? '<span class="jugador-nombre-foto-display text-xs text-gray-400">(' + escHTML( j.nombre_foto ) + ')</span>' : '';
+		var cargoHTML      = j.cargo ? ' - <span class="jugador-cargo-display text-xs text-gray-400">' + escHTML( j.cargo ) + '</span>' : '';
+	var nombreFotoHTML = j.nombre_foto ? ' <span class="jugador-nombre-foto-display text-xs text-sky-800">(' + escHTML( j.nombre_foto ) + ')</span>' : '';
 
 		return '<div class="club-jugador" data-jugador-id="' + j.id + '" data-nombre-foto="' + escAttr( j.nombre_foto || '' ) + '">'
 			+ '<div class="club-jugador__row flex items-center gap-4 px-6 py-4 bg-white hover:bg-gray-50 transition-colors">'
