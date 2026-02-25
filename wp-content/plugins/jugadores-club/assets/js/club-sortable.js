@@ -197,7 +197,7 @@
 
 			// Mostrar foto expandida.
 			var expanded = activeJugadorEl.querySelector( '.jugador-foto-expanded' );
-			expanded.innerHTML = '<img class="rounded-lg max-w-xs" src="' + escAttr( cdnUrl ) + '" alt="">';
+			expanded.innerHTML = '<img class="rounded-lg max-w-xl w-full" src="' + escAttr( cdnUrl ) + '" alt="">';
 			expanded.classList.remove( 'hidden' );
 
 			// Mostrar toggle y marcar como abierto.
@@ -435,7 +435,7 @@
 
 		var hasFoto       = j.foto_url ? true : false;
 		var toggleClass   = hasFoto ? '' : ' hidden';
-		var expandedImg   = hasFoto ? '<img class="rounded-lg max-w-xs" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">' : '';
+		var expandedImg   = hasFoto ? '<img class="rounded-lg max-w-xl w-full" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">' : '';
 		var nombreCompleto = escHTML( j.nombre ) + ( j.apellidos ? ' ' + escHTML( j.apellidos ) : '' );
 		var cargoHTML      = j.cargo ? ' - <span class="jugador-cargo-display text-xs text-gray-400">' + escHTML( j.cargo ) + '</span>' : '';
 	var nombreFotoHTML = j.nombre_foto ? ' <span class="jugador-nombre-foto-display text-xs text-sky-800">(' + escHTML( j.nombre_foto ) + ')</span>' : '';

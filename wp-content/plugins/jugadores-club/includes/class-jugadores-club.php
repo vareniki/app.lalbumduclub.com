@@ -31,6 +31,7 @@ class Jugadores_Club {
 		add_action( 'wp_ajax_album_update_jugador_foto', array( __CLASS__, 'ajax_update_foto' ) );
 		add_action( 'wp_ajax_album_update_jugador', array( __CLASS__, 'ajax_update_jugador' ) );
 		add_action( 'wp_ajax_album_add_jugador', array( __CLASS__, 'ajax_add_jugador' ) );
+		add_action( 'wp_ajax_album_export_csv', array( __CLASS__, 'ajax_export_csv' ) );
 	}
 
 	/**
@@ -57,6 +58,12 @@ class Jugadores_Club {
 		if ( ! $categorias ) {
 			return '';
 		}
+
+		$download_url = add_query_arg( array(
+			'action'  => 'album_export_csv',
+			'nonce'   => wp_create_nonce( 'album_club_nonce' ),
+			'club_id' => $club_id,
+		), admin_url( 'admin-ajax.php' ) );
 
 		global $wpdb;
 		$table = $wpdb->prefix . 'club_jugadores';
@@ -188,7 +195,7 @@ class Jugadores_Club {
 									<!-- Foto expandida -->
 									<div class="jugador-foto-expanded hidden px-6 py-4">
 										<?php if ( $jugador->foto_url ) : ?>
-											<img class="rounded-lg max-w-xs"
+											<img class="rounded-lg max-w-xl w-full"
 											     src="<?php echo esc_url( $jugador->foto_url ); ?>"
 											     alt="<?php echo esc_attr( $jugador->nombre ); ?>">
 										<?php endif; ?>
@@ -295,6 +302,16 @@ class Jugadores_Club {
 			</p>
 		</div>
 		<?php endif; ?>
+
+		<div class="mt-6 mb-6 flex justify-end">
+			<a href="<?php echo esc_url( $download_url ); ?>"
+			   class="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+				</svg>
+				Descarga la información
+			</a>
+		</div>
 
 		<?php
 		return ob_get_clean();
@@ -624,5 +641,88 @@ class Jugadores_Club {
 			'nombre_foto' => $nombre_foto,
 			'foto_url'   => '',
 		) );
+	}
+
+	/**
+	 * Genera y descarga un CSV con todas las categorías y jugadores del club.
+	 *
+	 * Estructura del CSV:
+	 *   [nombre de la categoría]
+	 *   nombre_foto,foto_url,nombre,apellidos,cargo
+	 *   [fila por jugador, ordenados por menu_order]
+	 *   [línea en blanco entre categorías]
+	 */
+	public static function ajax_export_csv(): void {
+		check_ajax_referer( 'album_club_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_die( 'Sin permisos.' );
+		}
+
+		$club_id = absint( $_GET['club_id'] ?? 0 );
+
+		if ( ! $club_id ) {
+			wp_die( 'Datos inválidos.' );
+		}
+
+		$categorias = get_field( 'categoria', $club_id );
+
+		if ( ! $categorias ) {
+			wp_die( 'Sin categorías.' );
+		}
+
+		global $wpdb;
+		$table = $wpdb->prefix . 'club_jugadores';
+
+		$post     = get_post( $club_id );
+		$slug     = $post ? sanitize_file_name( $post->post_title ) : 'club';
+		$filename = 'jugadores-' . $slug . '-' . gmdate( 'Y-m-d' ) . '.csv';
+
+		header( 'Content-Type: text/csv; charset=UTF-8' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		$output = fopen( 'php://output', 'w' );
+
+		// BOM UTF-8 para compatibilidad con Excel.
+		fwrite( $output, "\xEF\xBB\xBF" );
+
+		foreach ( $categorias as $cat ) {
+			$category_uid  = sanitize_title( $cat['categoria'] );
+			$category_name = $cat['categoria'];
+
+			// Fila de categoría.
+			fputcsv( $output, array( $category_name ) );
+
+			// Cabecera de campos.
+			fputcsv( $output, array( 'nombre_foto', 'foto_url', 'nombre', 'apellidos', 'cargo' ) );
+
+			// Jugadores ordenados.
+			$jugadores = $wpdb->get_results( $wpdb->prepare(
+				"SELECT nombre_foto, foto_url, nombre, apellidos, cargo
+				 FROM {$table}
+				 WHERE club_id = %d AND category_uid = %s
+				 ORDER BY menu_order ASC",
+				$club_id,
+				$category_uid
+			) );
+
+			foreach ( $jugadores as $jugador ) {
+				fputcsv( $output, array(
+					$jugador->nombre_foto ?? '',
+					$jugador->foto_url,
+					$jugador->nombre,
+					$jugador->apellidos,
+					$jugador->cargo,
+				) );
+			}
+
+			// Línea en blanco entre categorías.
+			fputcsv( $output, array() );
+		}
+
+		fclose( $output );
+		exit;
 	}
 }

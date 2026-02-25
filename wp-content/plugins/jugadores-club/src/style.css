@@ -7,6 +7,12 @@
     }
 }
 
+@layer base {
+    html {
+        font-size: 16px; /* Fuerza el tamaño base */
+    }
+}
+
 @theme {
     --default-mono-font-feature-settings: normal;
     --default-mono-font-variation-settings: normal;

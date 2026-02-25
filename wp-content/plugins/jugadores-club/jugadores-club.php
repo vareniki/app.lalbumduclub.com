@@ -14,12 +14,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'JC_VERSION', '1.0.15' );
+define( 'JC_VERSION', '1.0.23' );
 define( 'JC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JC_URI', plugin_dir_url( __FILE__ ) );
 
 require_once JC_DIR . 'includes/class-uploadcare.php';
 require_once JC_DIR . 'includes/class-jugadores-club.php';
+//require_once JC_DIR . 'includes/class-hide-login.php';
 
 /**
  * Crea la tabla wp_club_jugadores en la activación del plugin.
@@ -74,3 +75,4 @@ function jc_deactivate() {
 
 // Inicializar el plugin.
 Jugadores_Club::init();
+//JC_Hide_Login::init();
