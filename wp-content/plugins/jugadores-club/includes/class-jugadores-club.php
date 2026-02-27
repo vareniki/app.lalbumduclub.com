@@ -71,7 +71,7 @@ class Jugadores_Club {
 
 		ob_start();
 		?>
-		<div class="space-y-6" id="club-categorias" data-club-id="<?php echo esc_attr( $club_id ); ?>">
+		<div class="tw:space-y-6" id="club-categorias" data-club-id="<?php echo esc_attr( $club_id ); ?>">
 			<?php foreach ( $categorias as $cat ) :
 				$category_uid  = sanitize_title( $cat['categoria'] );
 				$category_name = esc_html( $cat['categoria'] );
@@ -85,15 +85,15 @@ class Jugadores_Club {
 				) );
 			?>
 
-				<section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+				<section class="tw:bg-white tw:rounded-xl tw:shadow-sm tw:border tw:border-gray-200 tw:overflow-hidden">
 					<!-- Cabecera categoría -->
-					<div class="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-						<h2 class="text-lg font-semibold text-gray-800"><?php echo $category_name; ?></h2>
-						<span class="club-jugadores-count text-sm text-gray-400"><?php echo count( $jugadores ); ?> jugador<?php echo count( $jugadores ) !== 1 ? 'es' : ''; ?></span>
+					<div class="tw:bg-gray-50 tw:border-b tw:border-gray-200 tw:px-6 tw:py-4 tw:flex tw:items-center tw:justify-between">
+						<h2 class="tw:text-lg tw:font-semibold tw:text-gray-800"><?php echo $category_name; ?></h2>
+						<span class="club-jugadores-count tw:text-sm tw:text-gray-400"><?php echo count( $jugadores ); ?> jugador<?php echo count( $jugadores ) !== 1 ? 'es' : ''; ?></span>
 					</div>
 
 					<!-- Lista de jugadores (sortable) -->
-					<div class="club-jugadores divide-y divide-gray-100 min-h-12"
+					<div class="club-jugadores tw:divide-y tw:divide-gray-100 tw:min-h-12"
 					     data-category-uid="<?php echo esc_attr( $category_uid ); ?>">
 						<?php if ( $jugadores ) : ?>
 							<?php foreach ( $jugadores as $jugador ) : ?>
@@ -101,108 +101,108 @@ class Jugadores_Club {
 								     data-jugador-id="<?php echo esc_attr( $jugador->id ); ?>"
 								     data-nombre-foto="<?php echo esc_attr( $jugador->nombre_foto ?? '' ); ?>">
 									<!-- Fila principal -->
-									<div class="club-jugador__row flex items-center gap-4 px-6 py-4 bg-white hover:bg-gray-50 transition-colors">
+									<div class="club-jugador__row tw:flex tw:items-center tw:gap-4 tw:px-6 tw:py-4 tw:bg-white tw:hover:bg-gray-50 tw:transition-colors">
 										<!-- Handle -->
-										<span class="drag-handle shrink-0 text-gray-300 hover:text-gray-500 transition-colors cursor-grab active:cursor-grabbing">
-											<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+										<span class="drag-handle tw:shrink-0 tw:text-gray-300 tw:hover:text-gray-500 tw:transition-colors tw:cursor-grab tw:active:cursor-grabbing">
+											<svg class="tw:w-5 tw:h-5" fill="currentColor" viewBox="0 0 20 20">
 												<path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
 											</svg>
 										</span>
 										<!-- Foto (clic para subir) -->
-										<div class="jugador-foto-trigger shrink-0 w-10 h-10 rounded-full overflow-hidden bg-gray-200 cursor-pointer ring-2 ring-transparent hover:ring-blue-400 transition-all"
+										<div class="jugador-foto-trigger tw:shrink-0 tw:w-10 tw:h-10 tw:rounded-full tw:overflow-hidden tw:bg-gray-200 tw:cursor-pointer tw:ring-2 tw:ring-transparent tw:hover:ring-blue-400 tw:transition-all"
 										     title="Subir foto">
 											<?php if ( $jugador->foto_url ) : ?>
-												<img class="w-full h-full object-cover"
+												<img class="tw:w-full tw:h-full tw:object-cover"
 												     src="<?php echo esc_url( $jugador->foto_url . '-/preview/100x66/' ); ?>"
 												     alt="<?php echo esc_attr( $jugador->nombre ); ?>">
 											<?php else : ?>
-												<svg class="w-full h-full text-gray-400 p-2" fill="currentColor" viewBox="0 0 20 20">
+												<svg class="tw:w-full tw:h-full tw:text-gray-400 tw:p-2" fill="currentColor" viewBox="0 0 20 20">
 													<path fill-rule="evenodd" d="M10 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-7 9a7 7 0 1 1 14 0H3z" clip-rule="evenodd"/>
 												</svg>
 											<?php endif; ?>
 										</div>
 										<!-- Nombre, apellidos y cargo -->
-										<div class="flex-1 min-w-0">
-											<span class="jugador-nombre-display text-sm font-medium text-gray-800"><?php echo esc_html( trim( $jugador->nombre . ' ' . $jugador->apellidos ) ); ?></span>
+										<div class="tw:flex-1 tw:min-w-0">
+											<span class="jugador-nombre-display tw:text-sm tw:font-medium tw:text-gray-800"><?php echo esc_html( trim( $jugador->nombre . ' ' . $jugador->apellidos ) ); ?></span>
 											<?php if ( $jugador->cargo ) : ?>
-												- <span class="jugador-cargo-display text-xs text-gray-400"><?php echo esc_html( strtoupper( $jugador->cargo ) ); ?></span>
+												- <span class="jugador-cargo-display tw:text-xs tw:text-gray-400"><?php echo esc_html( strtoupper( $jugador->cargo ) ); ?></span>
 											<?php endif; ?>
 											<?php if ( $jugador->nombre_foto ) : ?>
-												<span class="jugador-nombre-foto-display text-xs text-sky-800">(<?php echo esc_html( $jugador->nombre_foto ); ?>)</span>
+												<span class="jugador-nombre-foto-display tw:text-xs tw:text-sky-800">(<?php echo esc_html( $jugador->nombre_foto ); ?>)</span>
 											<?php endif; ?>
 										</div>
 										<!-- Toggle foto expandida -->
 										<button type="button"
-										        class="btn-toggle-foto shrink-0 text-gray-300 hover:text-blue-500 transition-colors <?php echo $jugador->foto_url ? '' : 'hidden'; ?>"
+										        class="btn-toggle-foto tw:shrink-0 tw:text-gray-300 tw:hover:text-blue-500 tw:transition-colors <?php echo $jugador->foto_url ? '' : 'tw:hidden'; ?>"
 										        title="Ver foto">
-											<svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+											<svg class="tw:w-4 tw:h-4 tw:transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
 											</svg>
 										</button>
 										<!-- Editar -->
 										<button type="button"
-										        class="btn-edit-jugador shrink-0 text-gray-300 hover:text-amber-500 transition-colors"
+										        class="btn-edit-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors"
 										        title="Editar jugador">
-											<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+											<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
 											</svg>
 										</button>
 										<!-- Eliminar -->
 										<button type="button"
-										        class="btn-delete-jugador shrink-0 text-gray-300 hover:text-red-500 transition-colors"
+										        class="btn-delete-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors"
 										        data-jugador-id="<?php echo esc_attr( $jugador->id ); ?>"
 										        title="Eliminar jugador">
-											<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+											<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
 											</svg>
 										</button>
 									</div>
 									<!-- Panel de edición -->
-									<div class="jugador-edit-panel hidden border-t border-gray-100 px-6 py-4 bg-gray-50">
-										<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+									<div class="jugador-edit-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-4 tw:bg-gray-50">
+										<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-3 tw:gap-3">
 											<div>
-												<label class="block text-xs text-gray-500 mb-1">Nombre</label>
-												<input type="text" class="edit-nombre w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+												<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre</label>
+												<input type="text" class="edit-nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 												       value="<?php echo esc_attr( $jugador->nombre ); ?>">
 											</div>
 											<div>
-												<label class="block text-xs text-gray-500 mb-1">Apellidos</label>
-												<input type="text" class="edit-apellidos w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+												<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Apellidos</label>
+												<input type="text" class="edit-apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 												       value="<?php echo esc_attr( $jugador->apellidos ); ?>">
 											</div>
 											<div>
-												<label class="block text-xs text-gray-500 mb-1">Cargo</label>
-												<input type="text" class="edit-cargo w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+												<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Cargo</label>
+												<input type="text" class="edit-cargo tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 												       value="<?php echo esc_attr( $jugador->cargo ); ?>">
 											</div>
 										</div>
-										<div class="mt-3">
-											<label class="block text-xs text-gray-500 mb-1">Nombre foto</label>
-											<input type="text" class="edit-nombre-foto w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+										<div class="tw:mt-3">
+											<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre foto</label>
+											<input type="text" class="edit-nombre-foto tw:w-full tw:sm:w-64 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 											       maxlength="64"
 											       placeholder="ej. 9999.jpg"
 											       value="<?php echo esc_attr( $jugador->nombre_foto ?? '' ); ?>">
-											<p class="mt-1 text-xs text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>
+											<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>
 										</div>
-										<div class="flex gap-2 mt-3">
-											<button type="button" class="btn-save-edit bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors">
+										<div class="tw:flex tw:gap-2 tw:mt-3">
+											<button type="button" class="btn-save-edit tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">
 												Guardar
 											</button>
-											<button type="button" class="btn-cancel-edit text-gray-400 hover:text-gray-600 text-sm px-3 py-1.5 rounded-lg transition-colors">
+											<button type="button" class="btn-cancel-edit tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">
 												Cancelar
 											</button>
 										</div>
 									</div>
 									<!-- Foto expandida -->
-									<div class="jugador-foto-expanded hidden px-6 py-4">
+									<div class="jugador-foto-expanded tw:hidden tw:px-6 tw:py-4">
 										<?php if ( $jugador->foto_url ) : ?>
-											<img class="rounded-lg max-w-xl w-full"
+											<img class="tw:rounded-lg tw:max-w-xl tw:w-full"
 											     src="<?php echo esc_url( $jugador->foto_url ) . '-/preview/1000x666/'; ?>"
 											     alt="<?php echo esc_attr( $jugador->nombre ); ?>">
 											<button type="button"
-											        class="btn-unassign-foto mt-2 inline-flex items-center gap-1 text-sm text-red-400 hover:text-red-600 transition-colors"
+											        class="btn-unassign-foto tw:mt-2 tw:inline-flex tw:items-center tw:gap-1 tw:text-sm tw:text-red-400 tw:hover:text-red-600 tw:transition-colors"
 											        title="Quitar foto">
-												<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+												<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 													<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
 												</svg>
 												Quitar foto
@@ -215,46 +215,46 @@ class Jugadores_Club {
 					</div>
 
 					<!-- Bulk add -->
-					<div class="bulk-add border-t border-gray-200 px-6 py-4">
-						<textarea class="bulk-add__input w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-y"
+					<div class="bulk-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4">
+						<textarea class="bulk-add__input tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 tw:placeholder-gray-400 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none tw:resize-y"
 						          rows="2"
 						          placeholder="Un jugador por línea: nombre, apellidos, cargo"
 						          data-category-uid="<?php echo esc_attr( $category_uid ); ?>"></textarea>
 						<button type="button"
-						        class="btn-bulk-add mt-2 inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+						        class="btn-bulk-add tw:mt-2 tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors"
 						        data-category-uid="<?php echo esc_attr( $category_uid ); ?>">
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+							<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
 							</svg>
 							Añadir en bulk
 						</button>
 					</div>
 					<!-- Single add -->
-					<div class="single-add border-t border-gray-200 px-6 py-4"
+					<div class="single-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4"
 					     data-category-uid="<?php echo esc_attr( $category_uid ); ?>">
-						<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+						<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-3 tw:gap-3">
 							<div>
-								<label class="block text-xs text-gray-500 mb-1">Nombre</label>
-								<input type="text" class="single-add__nombre w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Nombre">
+								<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre</label>
+								<input type="text" class="single-add__nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Nombre">
 							</div>
 							<div>
-								<label class="block text-xs text-gray-500 mb-1">Apellidos</label>
-								<input type="text" class="single-add__apellidos w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Apellidos">
+								<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Apellidos</label>
+								<input type="text" class="single-add__apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Apellidos">
 							</div>
 							<div>
-								<label class="block text-xs text-gray-500 mb-1">Cargo</label>
-								<input type="text" class="single-add__cargo w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Cargo">
+								<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Cargo</label>
+								<input type="text" class="single-add__cargo tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Cargo">
 							</div>
 						</div>
-						<div class="mt-3">
-							<label class="block text-xs text-gray-500 mb-1">Nombre foto</label>
-							<input type="text" class="single-add__nombre-foto w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" maxlength="32" placeholder="ej. 9999.jpg">
-							<p class="mt-1 text-xs text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>
+						<div class="tw:mt-3">
+							<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre foto</label>
+							<input type="text" class="single-add__nombre-foto tw:w-full tw:sm:w-64 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" maxlength="32" placeholder="ej. 9999.jpg">
+							<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>
 						</div>
-						<div class="mt-3">
+						<div class="tw:mt-3">
 							<button type="button"
-							        class="btn-single-add inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+							        class="btn-single-add tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors">
+								<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
 								</svg>
 								Añadir jugador
@@ -280,31 +280,31 @@ class Jugadores_Club {
 		$con_foto   = (int) ( $stats->con_foto ?? 0 );
 		$porcentaje = $total > 0 ? round( $con_foto / $total * 100 ) : 0;
 
-		$bar_color  = $porcentaje === 100 ? 'bg-green-500' : ( $porcentaje >= 80 ? 'bg-blue-500' : ( $porcentaje >= 50 ? 'bg-amber-400' : 'bg-red-400' ) );
-		$pct_color  = $porcentaje === 100 ? 'text-green-600' : ( $porcentaje >= 80 ? 'text-blue-600' : ( $porcentaje >= 50 ? 'text-amber-500' : 'text-red-500' ) );
+		$bar_color  = $porcentaje === 100 ? 'tw:bg-green-500' : ( $porcentaje >= 80 ? 'tw:bg-blue-500' : ( $porcentaje >= 50 ? 'tw:bg-amber-400' : 'tw:bg-red-400' ) );
+		$pct_color  = $porcentaje === 100 ? 'tw:text-green-600' : ( $porcentaje >= 80 ? 'tw:text-blue-600' : ( $porcentaje >= 50 ? 'tw:text-amber-500' : 'tw:text-red-500' ) );
 		?>
 
 		<?php if ( $total > 0 ) : ?>
-		<div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-5"
+		<div class="tw:mt-6 tw:bg-white tw:rounded-xl tw:shadow-sm tw:border tw:border-gray-200 tw:px-6 tw:py-5"
 		     id="club-stats-foto"
 		     data-con-foto="<?php echo esc_attr( $con_foto ); ?>"
 		     data-total="<?php echo esc_attr( $total ); ?>">
-			<div class="flex items-center justify-between mb-3">
-				<div class="flex items-center gap-2 text-gray-500">
-					<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+			<div class="tw:flex tw:items-center tw:justify-between tw:mb-3">
+				<div class="tw:flex tw:items-center tw:gap-2 tw:text-gray-500">
+					<svg class="tw:w-4 tw:h-4 tw:shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 0 1 2-2h.93a2 2 0 0 0 1.664-.89l.812-1.22A2 2 0 0 1 10.07 4h3.86a2 2 0 0 1 1.664.89l.812 1.22A2 2 0 0 0 18.07 7H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
 						<path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
 					</svg>
-					<span class="text-sm font-medium text-gray-700">Fotos del álbum</span>
+					<span class="tw:text-sm tw:font-medium tw:text-gray-700">Fotos del álbum</span>
 				</div>
-				<span class="stats-porcentaje text-2xl font-bold <?php echo $pct_color; ?>"><?php echo $porcentaje; ?>%</span>
+				<span class="stats-porcentaje tw:text-2xl tw:font-bold <?php echo $pct_color; ?>"><?php echo $porcentaje; ?>%</span>
 			</div>
-			<div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-				<div class="stats-bar h-2.5 rounded-full transition-all duration-500 <?php echo $bar_color; ?>"
+			<div class="tw:w-full tw:bg-gray-100 tw:rounded-full tw:h-2.5 tw:overflow-hidden">
+				<div class="stats-bar tw:h-2.5 tw:rounded-full tw:transition-all tw:duration-500 <?php echo $bar_color; ?>"
 				     style="width: <?php echo $porcentaje; ?>%"></div>
 			</div>
-			<p class="stats-label mt-2 text-xs text-gray-400">
-				<span class="stats-con-foto font-medium text-gray-500"><?php echo $con_foto; ?></span>
+			<p class="stats-label tw:mt-2 tw:text-xs tw:text-gray-400">
+				<span class="stats-con-foto tw:font-medium tw:text-gray-500"><?php echo $con_foto; ?></span>
 				miembros de
 				<span class="stats-total"><?php echo $total; ?></span>
 				tienen foto
@@ -312,10 +312,10 @@ class Jugadores_Club {
 		</div>
 		<?php endif; ?>
 
-		<div class="mt-6 mb-6 flex justify-end">
+		<div class="tw:mt-6 tw:mb-6 tw:flex tw:justify-end">
 			<a href="<?php echo esc_url( $download_url ); ?>"
-			   class="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-800 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
-				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+			   class="tw:inline-flex tw:items-center tw:gap-2 tw:bg-gray-700 tw:hover:bg-gray-800 tw:text-white tw:text-sm tw:font-medium tw:px-5 tw:py-2.5 tw:rounded-lg tw:transition-colors">
+				<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
 				</svg>
 				Descarga la información

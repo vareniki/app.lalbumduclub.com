@@ -1,15 +1,23 @@
-@import "tailwindcss";
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme) prefix(tw);
+@import "tailwindcss/utilities.css" layer(utilities) prefix(tw);
 
 /* Tus estilos personalizados aquí */
 @layer components {
     .btn-primary {
-        @apply bg-blue-500 text-white px-4 py-2 rounded;
+        @apply tw:bg-blue-500 tw:text-white tw:px-4 tw:py-2 tw:rounded;
     }
 }
 
 @layer base {
     html {
         font-size: 16px; /* Fuerza el tamaño base */
+    }
+    button {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
     }
 }
 

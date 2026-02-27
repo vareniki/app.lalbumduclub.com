@@ -24,8 +24,8 @@
 
 	var activeJugadorEl = null;
 
-	var UNASSIGN_BTN_HTML = '<button type="button" class="btn-unassign-foto mt-2 inline-flex items-center gap-1 text-sm text-red-400 hover:text-red-600 transition-colors" title="Quitar foto">'
-		+ '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">'
+	var UNASSIGN_BTN_HTML = '<button type="button" class="btn-unassign-foto tw:mt-2 tw:inline-flex tw:items-center tw:gap-1 tw:text-sm tw:text-red-400 tw:hover:text-red-600 tw:transition-colors" title="Quitar foto">'
+		+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">'
 		+ '<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>'
 		+ '</svg>Quitar foto</button>';
 
@@ -42,8 +42,8 @@
 				filter:          'button, .jugador-foto-trigger',
 				preventOnFilter: false,
 				animation:       200,
-				ghostClass:      'opacity-30',
-				dragClass:       'shadow-lg',
+				ghostClass:      'tw:opacity-30',
+				dragClass:       'tw:shadow-lg',
 				onEnd:           onSortEnd,
 			} );
 		} );
@@ -84,8 +84,8 @@
 			var jugador  = target.closest( '.club-jugador' );
 			var expanded = jugador.querySelector( '.jugador-foto-expanded' );
 			var icon     = target.querySelector( 'svg' );
-			expanded.classList.toggle( 'hidden' );
-			icon.classList.toggle( 'rotate-180' );
+			expanded.classList.toggle( 'tw:hidden' );
+			icon.classList.toggle( 'tw:rotate-180' );
 			return;
 		}
 
@@ -104,15 +104,15 @@
 				if ( ! res.success ) return;
 				// Resetear avatar.
 				var trigger = jugadorEl.querySelector( '.jugador-foto-trigger' );
-				trigger.innerHTML = '<svg class="w-full h-full text-gray-400 p-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-7 9a7 7 0 1 1 14 0H3z" clip-rule="evenodd"/></svg>';
+				trigger.innerHTML = '<svg class="tw:w-full tw:h-full tw:text-gray-400 tw:p-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-7 9a7 7 0 1 1 14 0H3z" clip-rule="evenodd"/></svg>';
 				// Vaciar y ocultar foto expandida.
 				var expanded = jugadorEl.querySelector( '.jugador-foto-expanded' );
 				expanded.innerHTML = '';
-				expanded.classList.add( 'hidden' );
+				expanded.classList.add( 'tw:hidden' );
 				// Ocultar toggle.
 				var toggleBtn = jugadorEl.querySelector( '.btn-toggle-foto' );
-				toggleBtn.classList.add( 'hidden' );
-				toggleBtn.querySelector( 'svg' ).classList.remove( 'rotate-180' );
+				toggleBtn.classList.add( 'tw:hidden' );
+				toggleBtn.querySelector( 'svg' ).classList.remove( 'tw:rotate-180' );
 				// Actualizar estadísticas solo si no había nombre_foto manual.
 				if ( ! hadNombreFoto ) {
 					updateStats( 0, -1 );
@@ -162,8 +162,8 @@
 			e.stopPropagation();
 			var jugadorEl = target.closest( '.club-jugador' );
 			var panel     = jugadorEl.querySelector( '.jugador-edit-panel' );
-			panel.classList.toggle( 'hidden' );
-			if ( ! panel.classList.contains( 'hidden' ) ) {
+			panel.classList.toggle( 'tw:hidden' );
+			if ( ! panel.classList.contains( 'tw:hidden' ) ) {
 				panel.querySelector( '.edit-nombre' ).focus();
 			}
 			return;
@@ -183,7 +183,7 @@
 		if ( target ) {
 			e.preventDefault();
 			e.stopPropagation();
-			target.closest( '.jugador-edit-panel' ).classList.add( 'hidden' );
+			target.closest( '.jugador-edit-panel' ).classList.add( 'tw:hidden' );
 			return;
 		}
 
@@ -220,10 +220,10 @@
 
 		activeJugadorEl = null;
 
-		trigger.classList.add( 'opacity-50', 'pointer-events-none' );
+		trigger.classList.add( 'tw:opacity-50', 'tw:pointer-events-none' );
 
 		uploadToUploadcare( file, function ( cdnUrl ) {
-			trigger.classList.remove( 'opacity-50', 'pointer-events-none' );
+			trigger.classList.remove( 'tw:opacity-50', 'tw:pointer-events-none' );
 
 			if ( ! cdnUrl ) {
 				alert( 'Error al subir la imagen.' );
@@ -234,27 +234,27 @@
 			cdnUrl += '-/preview/1000x666/';
 
 			// Actualizar avatar.
-			trigger.innerHTML = '<img class="w-full h-full object-cover" src="' + escAttr( cdnUrl ) + '" alt="">';
+			trigger.innerHTML = '<img class="tw:w-full tw:h-full tw:object-cover" src="' + escAttr( cdnUrl ) + '" alt="">';
 
 			// Mostrar foto expandida con botón para quitar.
 			var expanded = jugadorEl.querySelector( '.jugador-foto-expanded' );
-			expanded.innerHTML = '<img class="rounded-lg max-w-xl w-full" src="' + escAttr( cdnUrl ) + '-/preview/1000x666/" alt="">'
+			expanded.innerHTML = '<img class="tw:rounded-lg tw:max-w-xl tw:w-full" src="' + escAttr( cdnUrl ) + '-/preview/1000x666/" alt="">'
 				+ UNASSIGN_BTN_HTML;
-			expanded.classList.remove( 'hidden' );
+			expanded.classList.remove( 'tw:hidden' );
 
 			// Mostrar toggle y marcar como abierto.
 			var toggleBtn = jugadorEl.querySelector( '.btn-toggle-foto' );
-			toggleBtn.classList.remove( 'hidden' );
-			toggleBtn.querySelector( 'svg' ).classList.add( 'rotate-180' );
+			toggleBtn.classList.remove( 'tw:hidden' );
+			toggleBtn.querySelector( 'svg' ).classList.add( 'tw:rotate-180' );
 
 			// Actualizar nombre_foto en la fila.
 			var nombreFotoSpan = jugadorEl.querySelector( '.jugador-nombre-foto-display' );
 			if ( nombreFotoSpan ) {
 				nombreFotoSpan.textContent = '(' + fileName + ')';
 			} else {
-				var displayEl = jugadorEl.querySelector( '.flex-1.min-w-0' );
+				var displayEl = jugadorEl.querySelector( '.tw\\:flex-1.tw\\:min-w-0' ) || jugadorEl.querySelector( '[class*="flex-1"]' );
 				if ( displayEl ) {
-					displayEl.insertAdjacentHTML( 'beforeend', ' <span class="jugador-nombre-foto-display text-xs text-sky-800">(' + escHTML( fileName ) + ')</span>' );
+					displayEl.insertAdjacentHTML( 'beforeend', ' <span class="jugador-nombre-foto-display tw:text-xs tw:text-sky-800">(' + escHTML( fileName ) + ')</span>' );
 				}
 			}
 			jugadorEl.dataset.nombreFoto = fileName;
@@ -334,15 +334,15 @@
 			// Actualizar texto visible en la fila.
 			var nombreCompleto  = res.data.nombre + ( res.data.apellidos ? ' ' + res.data.apellidos : '' );
 			var nuevoNombreFoto = res.data.nombre_foto || '';
-			var displayEl       = jugadorEl.querySelector( '.flex-1.min-w-0' );
+			var displayEl       = jugadorEl.querySelector( '.tw\\:flex-1.tw\\:min-w-0' ) || jugadorEl.querySelector( '[class*="flex-1"]' );
 
 			if ( displayEl ) {
-				var html = '<span class="jugador-nombre-display text-sm font-medium text-gray-800">' + escHTML( nombreCompleto ) + '</span>';
+				var html = '<span class="jugador-nombre-display tw:text-sm tw:font-medium tw:text-gray-800">' + escHTML( nombreCompleto ) + '</span>';
 				if ( res.data.cargo ) {
-					html += ' - <span class="jugador-cargo-display text-xs text-gray-400">' + escHTML( res.data.cargo ) + '</span>';
+					html += ' - <span class="jugador-cargo-display tw:text-xs tw:text-gray-400">' + escHTML( res.data.cargo ) + '</span>';
 				}
 				if ( nuevoNombreFoto ) {
-					html += ' <span class="jugador-nombre-foto-display text-xs text-sky-800">(' + escHTML( nuevoNombreFoto ) + ')</span>';
+					html += ' <span class="jugador-nombre-foto-display tw:text-xs tw:text-sky-800">(' + escHTML( nuevoNombreFoto ) + ')</span>';
 				}
 				displayEl.innerHTML = html;
 			}
@@ -354,7 +354,7 @@
 			}
 			jugadorEl.dataset.nombreFoto = nuevoNombreFoto;
 
-			panel.classList.add( 'hidden' );
+			panel.classList.add( 'tw:hidden' );
 		} );
 	}
 
@@ -464,14 +464,14 @@
 		// Barra.
 		var bar = statsEl.querySelector( '.stats-bar' );
 		bar.style.width = pct + '%';
-		[ 'bg-green-500', 'bg-blue-500', 'bg-amber-400', 'bg-red-400' ].forEach( function ( c ) { bar.classList.remove( c ); } );
-		bar.classList.add( pct === 100 ? 'bg-green-500' : pct >= 80 ? 'bg-blue-500' : pct >= 50 ? 'bg-amber-400' : 'bg-red-400' );
+		[ 'tw:bg-green-500', 'tw:bg-blue-500', 'tw:bg-amber-400', 'tw:bg-red-400' ].forEach( function ( c ) { bar.classList.remove( c ); } );
+		bar.classList.add( pct === 100 ? 'tw:bg-green-500' : pct >= 80 ? 'tw:bg-blue-500' : pct >= 50 ? 'tw:bg-amber-400' : 'tw:bg-red-400' );
 
 		// Porcentaje.
 		var pctEl = statsEl.querySelector( '.stats-porcentaje' );
 		pctEl.textContent = pct + '%';
-		[ 'text-green-600', 'text-blue-600', 'text-amber-500', 'text-red-500' ].forEach( function ( c ) { pctEl.classList.remove( c ); } );
-		pctEl.classList.add( pct === 100 ? 'text-green-600' : pct >= 80 ? 'text-blue-600' : pct >= 50 ? 'text-amber-500' : 'text-red-500' );
+		[ 'tw:text-green-600', 'tw:text-blue-600', 'tw:text-amber-500', 'tw:text-red-500' ].forEach( function ( c ) { pctEl.classList.remove( c ); } );
+		pctEl.classList.add( pct === 100 ? 'tw:text-green-600' : pct >= 80 ? 'tw:text-blue-600' : pct >= 50 ? 'tw:text-amber-500' : 'tw:text-red-500' );
 
 		// Texto.
 		statsEl.querySelector( '.stats-con-foto' ).textContent = conFoto;
@@ -489,50 +489,50 @@
 
 	function playerHTML( j ) {
 		var foto = j.foto_url
-			? '<img class="w-full h-full object-cover" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">'
-			: '<svg class="w-full h-full text-gray-400 p-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-7 9a7 7 0 1 1 14 0H3z" clip-rule="evenodd"/></svg>';
+			? '<img class="tw:w-full tw:h-full tw:object-cover" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">'
+			: '<svg class="tw:w-full tw:h-full tw:text-gray-400 tw:p-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-7 9a7 7 0 1 1 14 0H3z" clip-rule="evenodd"/></svg>';
 
 		var hasFoto       = j.foto_url ? true : false;
-		var toggleClass   = hasFoto ? '' : ' hidden';
-		var expandedContent = hasFoto ? '<img class="rounded-lg max-w-xl w-full" src="' + escAttr( j.foto_url ) + '-/preview/1000x666/" alt="' + escAttr( j.nombre ) + '">' + UNASSIGN_BTN_HTML : '';
+		var toggleClass   = hasFoto ? '' : ' tw:hidden';
+		var expandedContent = hasFoto ? '<img class="tw:rounded-lg tw:max-w-xl tw:w-full" src="' + escAttr( j.foto_url ) + '-/preview/1000x666/" alt="' + escAttr( j.nombre ) + '">' + UNASSIGN_BTN_HTML : '';
 		var nombreCompleto = escHTML( j.nombre ) + ( j.apellidos ? ' ' + escHTML( j.apellidos ) : '' );
-		var cargoHTML      = j.cargo ? ' - <span class="jugador-cargo-display text-xs text-gray-400">' + escHTML( j.cargo ) + '</span>' : '';
-	var nombreFotoHTML = j.nombre_foto ? ' <span class="jugador-nombre-foto-display text-xs text-sky-800">(' + escHTML( j.nombre_foto ) + ')</span>' : '';
+		var cargoHTML      = j.cargo ? ' - <span class="jugador-cargo-display tw:text-xs tw:text-gray-400">' + escHTML( j.cargo ) + '</span>' : '';
+		var nombreFotoHTML = j.nombre_foto ? ' <span class="jugador-nombre-foto-display tw:text-xs tw:text-sky-800">(' + escHTML( j.nombre_foto ) + ')</span>' : '';
 
 		return '<div class="club-jugador" data-jugador-id="' + j.id + '" data-nombre-foto="' + escAttr( j.nombre_foto || '' ) + '">'
-			+ '<div class="club-jugador__row flex items-center gap-4 px-6 py-4 bg-white hover:bg-gray-50 transition-colors">'
-			+ '<span class="drag-handle shrink-0 text-gray-300 hover:text-gray-500 transition-colors cursor-grab active:cursor-grabbing">'
-			+ '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>'
+			+ '<div class="club-jugador__row tw:flex tw:items-center tw:gap-4 tw:px-6 tw:py-4 tw:bg-white tw:hover:bg-gray-50 tw:transition-colors">'
+			+ '<span class="drag-handle tw:shrink-0 tw:text-gray-300 tw:hover:text-gray-500 tw:transition-colors tw:cursor-grab tw:active:cursor-grabbing">'
+			+ '<svg class="tw:w-5 tw:h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>'
 			+ '</span>'
-			+ '<div class="jugador-foto-trigger shrink-0 w-10 h-10 rounded-full overflow-hidden bg-gray-200 cursor-pointer ring-2 ring-transparent hover:ring-blue-400 transition-all" title="Subir foto">' + foto + '</div>'
-			+ '<div class="flex-1 min-w-0"><span class="jugador-nombre-display text-sm font-medium text-gray-800">' + nombreCompleto + '</span>' + cargoHTML + nombreFotoHTML + '</div>'
-			+ '<button type="button" class="btn-toggle-foto shrink-0 text-gray-300 hover:text-blue-500 transition-colors' + toggleClass + '" title="Ver foto">'
-			+ '<svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>'
+			+ '<div class="jugador-foto-trigger tw:shrink-0 tw:w-10 tw:h-10 tw:rounded-full tw:overflow-hidden tw:bg-gray-200 tw:cursor-pointer tw:ring-2 tw:ring-transparent tw:hover:ring-blue-400 tw:transition-all" title="Subir foto">' + foto + '</div>'
+			+ '<div class="tw:flex-1 tw:min-w-0"><span class="jugador-nombre-display tw:text-sm tw:font-medium tw:text-gray-800">' + nombreCompleto + '</span>' + cargoHTML + nombreFotoHTML + '</div>'
+			+ '<button type="button" class="btn-toggle-foto tw:shrink-0 tw:text-gray-300 tw:hover:text-blue-500 tw:transition-colors' + toggleClass + '" title="Ver foto">'
+			+ '<svg class="tw:w-4 tw:h-4 tw:transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>'
 			+ '</button>'
-			+ '<button type="button" class="btn-edit-jugador shrink-0 text-gray-300 hover:text-amber-500 transition-colors" title="Editar jugador">'
-			+ '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/></svg>'
+			+ '<button type="button" class="btn-edit-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Editar jugador">'
+			+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/></svg>'
 			+ '</button>'
-			+ '<button type="button" class="btn-delete-jugador shrink-0 text-gray-300 hover:text-red-500 transition-colors" data-jugador-id="' + j.id + '" title="Eliminar jugador">'
-			+ '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>'
+			+ '<button type="button" class="btn-delete-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-jugador-id="' + j.id + '" title="Eliminar jugador">'
+			+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>'
 			+ '</button>'
 			+ '</div>'
-			+ '<div class="jugador-edit-panel hidden border-t border-gray-100 px-6 py-4 bg-gray-50">'
-			+ '<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">'
-			+ '<div><label class="block text-xs text-gray-500 mb-1">Nombre</label><input type="text" class="edit-nombre w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" value="' + escAttr( j.nombre ) + '"></div>'
-			+ '<div><label class="block text-xs text-gray-500 mb-1">Apellidos</label><input type="text" class="edit-apellidos w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" value="' + escAttr( j.apellidos || '' ) + '"></div>'
-			+ '<div><label class="block text-xs text-gray-500 mb-1">Cargo</label><input type="text" class="edit-cargo w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" value="' + escAttr( j.cargo || '' ) + '"></div>'
+			+ '<div class="jugador-edit-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-4 tw:bg-gray-50">'
+			+ '<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-3 tw:gap-3">'
+			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre</label><input type="text" class="edit-nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( j.nombre ) + '"></div>'
+			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Apellidos</label><input type="text" class="edit-apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( j.apellidos || '' ) + '"></div>'
+			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Cargo</label><input type="text" class="edit-cargo tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( j.cargo || '' ) + '"></div>'
 			+ '</div>'
-			+ '<div class="mt-3">'
-			+ '<label class="block text-xs text-gray-500 mb-1">Nombre foto</label>'
-			+ '<input type="text" class="edit-nombre-foto w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" maxlength="64" placeholder="ej. 9999.jpg" value="' + escAttr( j.nombre_foto || '' ) + '">'
-			+ '<p class="mt-1 text-xs text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>'
+			+ '<div class="tw:mt-3">'
+			+ '<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre foto</label>'
+			+ '<input type="text" class="edit-nombre-foto tw:w-full tw:sm:w-64 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" maxlength="64" placeholder="ej. 9999.jpg" value="' + escAttr( j.nombre_foto || '' ) + '">'
+			+ '<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>'
 			+ '</div>'
-			+ '<div class="flex gap-2 mt-3">'
-			+ '<button type="button" class="btn-save-edit bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-lg transition-colors">Guardar</button>'
-			+ '<button type="button" class="btn-cancel-edit text-gray-400 hover:text-gray-600 text-sm px-3 py-1.5 rounded-lg transition-colors">Cancelar</button>'
+			+ '<div class="tw:flex tw:gap-2 tw:mt-3">'
+			+ '<button type="button" class="btn-save-edit tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Guardar</button>'
+			+ '<button type="button" class="btn-cancel-edit tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Cancelar</button>'
 			+ '</div>'
 			+ '</div>'
-			+ '<div class="jugador-foto-expanded hidden px-6 py-4">' + expandedContent + '</div>'
+			+ '<div class="jugador-foto-expanded tw:hidden tw:px-6 tw:py-4">' + expandedContent + '</div>'
 			+ '</div>';
 	}
 
