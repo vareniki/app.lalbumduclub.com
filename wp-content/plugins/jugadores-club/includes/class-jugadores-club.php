@@ -32,6 +32,7 @@ class Jugadores_Club {
 		add_action( 'wp_ajax_album_update_jugador', array( __CLASS__, 'ajax_update_jugador' ) );
 		add_action( 'wp_ajax_album_add_jugador', array( __CLASS__, 'ajax_add_jugador' ) );
 		add_action( 'wp_ajax_album_export_csv', array( __CLASS__, 'ajax_export_csv' ) );
+		add_action( 'wp_ajax_album_clear_jugador_foto', array( __CLASS__, 'ajax_clear_foto' ) );
 	}
 
 	/**
@@ -178,7 +179,7 @@ class Jugadores_Club {
 										<div class="mt-3">
 											<label class="block text-xs text-gray-500 mb-1">Nombre foto</label>
 											<input type="text" class="edit-nombre-foto w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-											       maxlength="32"
+											       maxlength="64"
 											       placeholder="ej. 9999.jpg"
 											       value="<?php echo esc_attr( $jugador->nombre_foto ?? '' ); ?>">
 											<p class="mt-1 text-xs text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>
@@ -196,8 +197,16 @@ class Jugadores_Club {
 									<div class="jugador-foto-expanded hidden px-6 py-4">
 										<?php if ( $jugador->foto_url ) : ?>
 											<img class="rounded-lg max-w-xl w-full"
-											     src="<?php echo esc_url( $jugador->foto_url ); ?>"
+											     src="<?php echo esc_url( $jugador->foto_url ) . '-/preview/1000x666/'; ?>"
 											     alt="<?php echo esc_attr( $jugador->nombre ); ?>">
+											<button type="button"
+											        class="btn-unassign-foto mt-2 inline-flex items-center gap-1 text-sm text-red-400 hover:text-red-600 transition-colors"
+											        title="Quitar foto">
+												<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+												</svg>
+												Quitar foto
+											</button>
 										<?php endif; ?>
 									</div>
 								</div>
@@ -506,7 +515,7 @@ class Jugadores_Club {
 	}
 
 	/**
-	 * Actualiza la foto de un jugador.
+	 * Actualiza la foto de un jugador y opcionalmente su nombre_foto.
 	 */
 	public static function ajax_update_foto(): void {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
@@ -515,18 +524,61 @@ class Jugadores_Club {
 			wp_send_json_error( 'Sin permisos.' );
 		}
 
-		$club_id    = absint( $_POST['club_id'] ?? 0 );
-		$jugador_id = absint( $_POST['jugador_id'] ?? 0 );
-		$foto_url   = esc_url_raw( $_POST['foto_url'] ?? '' );
+		$club_id     = absint( $_POST['club_id'] ?? 0 );
+		$jugador_id  = absint( $_POST['jugador_id'] ?? 0 );
+		$foto_url    = esc_url_raw( $_POST['foto_url'] ?? '' );
+		$nombre_foto = sanitize_text_field( trim( $_POST['nombre_foto'] ?? '' ) );
+		$nombre_foto = substr( $nombre_foto, 0, 64 );
 
 		if ( ! $club_id || ! $jugador_id || ! $foto_url ) {
+			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		$data    = array( 'foto_url' => $foto_url );
+		$formats = array( '%s' );
+
+		if ( '' !== $nombre_foto ) {
+			$data['nombre_foto'] = $nombre_foto;
+			$formats[]           = '%s';
+		}
+
+		global $wpdb;
+		$updated = $wpdb->update(
+			$wpdb->prefix . 'club_jugadores',
+			$data,
+			array( 'id' => $jugador_id, 'club_id' => $club_id ),
+			$formats,
+			array( '%d', '%d' )
+		);
+
+		if ( false === $updated ) {
+			wp_send_json_error( 'Error al actualizar.' );
+		}
+
+		wp_send_json_success( array( 'foto_url' => $foto_url, 'nombre_foto' => $nombre_foto ) );
+	}
+
+	/**
+	 * Desasigna la foto de un jugador (vacía foto_url).
+	 */
+	public static function ajax_clear_foto(): void {
+		check_ajax_referer( 'album_club_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		$club_id    = absint( $_POST['club_id'] ?? 0 );
+		$jugador_id = absint( $_POST['jugador_id'] ?? 0 );
+
+		if ( ! $club_id || ! $jugador_id ) {
 			wp_send_json_error( 'Datos inválidos.' );
 		}
 
 		global $wpdb;
 		$updated = $wpdb->update(
 			$wpdb->prefix . 'club_jugadores',
-			array( 'foto_url' => $foto_url ),
+			array( 'foto_url' => '' ),
 			array( 'id' => $jugador_id, 'club_id' => $club_id ),
 			array( '%s' ),
 			array( '%d', '%d' )
@@ -536,7 +588,7 @@ class Jugadores_Club {
 			wp_send_json_error( 'Error al actualizar.' );
 		}
 
-		wp_send_json_success( array( 'foto_url' => $foto_url ) );
+		wp_send_json_success();
 	}
 
 	/**

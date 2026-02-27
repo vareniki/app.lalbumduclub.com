@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'JC_VERSION', '1.0.23' );
+define( 'JC_VERSION', '1.0.25' );
 define( 'JC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JC_URI', plugin_dir_url( __FILE__ ) );
 
@@ -38,7 +38,7 @@ function jc_activate() {
 		nombre varchar(64) NOT NULL DEFAULT '',
 		apellidos varchar(64) NOT NULL DEFAULT '',
 		cargo varchar(32) NOT NULL DEFAULT '',
-		nombre_foto varchar(32) NULL,
+		nombre_foto varchar(64) NULL,
 		foto_url varchar(256) NOT NULL DEFAULT '',
 		menu_order int(11) NOT NULL DEFAULT 0,
 		created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -24,6 +24,11 @@
 
 	var activeJugadorEl = null;
 
+	var UNASSIGN_BTN_HTML = '<button type="button" class="btn-unassign-foto mt-2 inline-flex items-center gap-1 text-sm text-red-400 hover:text-red-600 transition-colors" title="Quitar foto">'
+		+ '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">'
+		+ '<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>'
+		+ '</svg>Quitar foto</button>';
+
 	// ─── Sortable ──────────────────────────────────────────
 
 	initSortables();
@@ -81,6 +86,38 @@
 			var icon     = target.querySelector( 'svg' );
 			expanded.classList.toggle( 'hidden' );
 			icon.classList.toggle( 'rotate-180' );
+			return;
+		}
+
+		// Quitar foto.
+		target = e.target.closest( '.btn-unassign-foto' );
+		if ( target ) {
+			e.preventDefault();
+			e.stopPropagation();
+			var jugadorEl     = target.closest( '.club-jugador' );
+			var jugadorId     = jugadorEl.dataset.jugadorId;
+			var hadNombreFoto = !! jugadorEl.dataset.nombreFoto;
+			ajax( 'album_clear_jugador_foto', {
+				club_id:    clubId,
+				jugador_id: jugadorId,
+			}, function ( res ) {
+				if ( ! res.success ) return;
+				// Resetear avatar.
+				var trigger = jugadorEl.querySelector( '.jugador-foto-trigger' );
+				trigger.innerHTML = '<svg class="w-full h-full text-gray-400 p-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-7 9a7 7 0 1 1 14 0H3z" clip-rule="evenodd"/></svg>';
+				// Vaciar y ocultar foto expandida.
+				var expanded = jugadorEl.querySelector( '.jugador-foto-expanded' );
+				expanded.innerHTML = '';
+				expanded.classList.add( 'hidden' );
+				// Ocultar toggle.
+				var toggleBtn = jugadorEl.querySelector( '.btn-toggle-foto' );
+				toggleBtn.classList.add( 'hidden' );
+				toggleBtn.querySelector( 'svg' ).classList.remove( 'rotate-180' );
+				// Actualizar estadísticas solo si no había nombre_foto manual.
+				if ( ! hadNombreFoto ) {
+					updateStats( 0, -1 );
+				}
+			} );
 			return;
 		}
 
@@ -174,10 +211,14 @@
 	fileInput.addEventListener( 'change', function () {
 		if ( ! fileInput.files.length || ! activeJugadorEl ) return;
 
-		var file             = fileInput.files[0];
-		var jugadorId        = activeJugadorEl.dataset.jugadorId;
-		var trigger          = activeJugadorEl.querySelector( '.jugador-foto-trigger' );
-		var hadFotoYa        = !! activeJugadorEl.querySelector( '.jugador-foto-trigger img' ) || !! activeJugadorEl.dataset.nombreFoto;
+		var file          = fileInput.files[0];
+		var fileName      = file.name.substring( 0, 64 );
+		var jugadorEl     = activeJugadorEl;
+		var jugadorId     = jugadorEl.dataset.jugadorId;
+		var trigger       = jugadorEl.querySelector( '.jugador-foto-trigger' );
+		var hadFotoYa     = !! jugadorEl.querySelector( '.jugador-foto-trigger img' ) || !! jugadorEl.dataset.nombreFoto;
+
+		activeJugadorEl = null;
 
 		trigger.classList.add( 'opacity-50', 'pointer-events-none' );
 
@@ -195,28 +236,46 @@
 			// Actualizar avatar.
 			trigger.innerHTML = '<img class="w-full h-full object-cover" src="' + escAttr( cdnUrl ) + '" alt="">';
 
-			// Mostrar foto expandida.
-			var expanded = activeJugadorEl.querySelector( '.jugador-foto-expanded' );
-			expanded.innerHTML = '<img class="rounded-lg max-w-xl w-full" src="' + escAttr( cdnUrl ) + '" alt="">';
+			// Mostrar foto expandida con botón para quitar.
+			var expanded = jugadorEl.querySelector( '.jugador-foto-expanded' );
+			expanded.innerHTML = '<img class="rounded-lg max-w-xl w-full" src="' + escAttr( cdnUrl ) + '-/preview/1000x666/" alt="">'
+				+ UNASSIGN_BTN_HTML;
 			expanded.classList.remove( 'hidden' );
 
 			// Mostrar toggle y marcar como abierto.
-			var toggleBtn = activeJugadorEl.querySelector( '.btn-toggle-foto' );
+			var toggleBtn = jugadorEl.querySelector( '.btn-toggle-foto' );
 			toggleBtn.classList.remove( 'hidden' );
 			toggleBtn.querySelector( 'svg' ).classList.add( 'rotate-180' );
 
+			// Actualizar nombre_foto en la fila.
+			var nombreFotoSpan = jugadorEl.querySelector( '.jugador-nombre-foto-display' );
+			if ( nombreFotoSpan ) {
+				nombreFotoSpan.textContent = '(' + fileName + ')';
+			} else {
+				var displayEl = jugadorEl.querySelector( '.flex-1.min-w-0' );
+				if ( displayEl ) {
+					displayEl.insertAdjacentHTML( 'beforeend', ' <span class="jugador-nombre-foto-display text-xs text-sky-800">(' + escHTML( fileName ) + ')</span>' );
+				}
+			}
+			jugadorEl.dataset.nombreFoto = fileName;
+
+			// Actualizar el input del panel de edición.
+			var editInput = jugadorEl.querySelector( '.edit-nombre-foto' );
+			if ( editInput ) {
+				editInput.value = fileName;
+			}
+
 			// Guardar en BD.
 			ajax( 'album_update_jugador_foto', {
-				club_id:    clubId,
-				jugador_id: jugadorId,
-				foto_url:   cdnUrl,
+				club_id:     clubId,
+				jugador_id:  jugadorId,
+				foto_url:    cdnUrl,
+				nombre_foto: fileName,
 			}, function ( res ) {
 				if ( res.success && ! hadFotoYa ) {
 					updateStats( 0, 1 );
 				}
 			} );
-
-			activeJugadorEl = null;
 		} );
 	} );
 
@@ -435,7 +494,7 @@
 
 		var hasFoto       = j.foto_url ? true : false;
 		var toggleClass   = hasFoto ? '' : ' hidden';
-		var expandedImg   = hasFoto ? '<img class="rounded-lg max-w-xl w-full" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">' : '';
+		var expandedContent = hasFoto ? '<img class="rounded-lg max-w-xl w-full" src="' + escAttr( j.foto_url ) + '-/preview/1000x666/" alt="' + escAttr( j.nombre ) + '">' + UNASSIGN_BTN_HTML : '';
 		var nombreCompleto = escHTML( j.nombre ) + ( j.apellidos ? ' ' + escHTML( j.apellidos ) : '' );
 		var cargoHTML      = j.cargo ? ' - <span class="jugador-cargo-display text-xs text-gray-400">' + escHTML( j.cargo ) + '</span>' : '';
 	var nombreFotoHTML = j.nombre_foto ? ' <span class="jugador-nombre-foto-display text-xs text-sky-800">(' + escHTML( j.nombre_foto ) + ')</span>' : '';
@@ -465,7 +524,7 @@
 			+ '</div>'
 			+ '<div class="mt-3">'
 			+ '<label class="block text-xs text-gray-500 mb-1">Nombre foto</label>'
-			+ '<input type="text" class="edit-nombre-foto w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" maxlength="32" placeholder="ej. 9999.jpg" value="' + escAttr( j.nombre_foto || '' ) + '">'
+			+ '<input type="text" class="edit-nombre-foto w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:border-blue-500 outline-none" maxlength="64" placeholder="ej. 9999.jpg" value="' + escAttr( j.nombre_foto || '' ) + '">'
 			+ '<p class="mt-1 text-xs text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>'
 			+ '</div>'
 			+ '<div class="flex gap-2 mt-3">'
@@ -473,7 +532,7 @@
 			+ '<button type="button" class="btn-cancel-edit text-gray-400 hover:text-gray-600 text-sm px-3 py-1.5 rounded-lg transition-colors">Cancelar</button>'
 			+ '</div>'
 			+ '</div>'
-			+ '<div class="jugador-foto-expanded hidden px-6 py-4">' + expandedImg + '</div>'
+			+ '<div class="jugador-foto-expanded hidden px-6 py-4">' + expandedContent + '</div>'
 			+ '</div>';
 	}
 
