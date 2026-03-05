@@ -44,6 +44,11 @@ function brx_can_show_club_info() {
 		return 1;
 	}
 
+	// El gestor tiene acceso a todos los clubs.
+	if ( in_array( 'gestor', $user->roles, true ) ) {
+		return 1;
+	}
+
 	if ( in_array( 'club', $user->roles, true ) ) {
 		$club_slug = get_field( 'club_slug', 'user_' . $user->ID );
 		if ( $club_slug && str_contains( $_SERVER['REQUEST_URI'], '/' . $club_slug . '/' ) ) {

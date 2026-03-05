@@ -52,6 +52,10 @@ class Jugadores_Club {
 			return '';
 		}
 
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			return '';
+		}
+
 		self::$enqueue = true;
 
 		$categorias = get_field( 'categoria', $club_id );
@@ -371,6 +375,40 @@ class Jugadores_Club {
 		) );
 	}
 
+	// ─── Control de acceso por club_slug ───────────────────
+
+	/**
+	 * Comprueba si el usuario actual puede acceder al club indicado.
+	 *
+	 * Los usuarios con rol "club" solo pueden acceder a clubs cuyo slug de post
+	 * termine en el valor de su campo ACF `club_slug`.
+	 * El resto de usuarios (administradores, editores, etc.) siempre tienen acceso.
+	 *
+	 * @param int $club_id ID del post del club.
+	 * @return bool
+	 */
+	private static function user_can_access_club( int $club_id ): bool {
+		$user = wp_get_current_user();
+
+		if ( ! in_array( 'club', (array) $user->roles, true ) ) {
+			return true;
+		}
+
+		$club_slug = get_field( 'club_slug', 'user_' . $user->ID );
+
+		if ( empty( $club_slug ) ) {
+			return false;
+		}
+
+		$post = get_post( $club_id );
+
+		if ( ! $post ) {
+			return false;
+		}
+
+		return str_ends_with( $post->post_name, $club_slug );
+	}
+
 	// ─── AJAX handlers ─────────────────────────────────────
 
 	/**
@@ -388,6 +426,10 @@ class Jugadores_Club {
 
 		if ( ! $club_id || ! is_array( $categories ) ) {
 			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
 		}
 
 		global $wpdb;
@@ -438,6 +480,10 @@ class Jugadores_Club {
 			wp_send_json_error( 'Datos inválidos.' );
 		}
 
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
 		global $wpdb;
 		$deleted = $wpdb->delete(
 			$wpdb->prefix . 'club_jugadores',
@@ -468,6 +514,10 @@ class Jugadores_Club {
 
 		if ( ! $club_id || ! $category_uid || ! is_array( $jugadores ) || empty( $jugadores ) ) {
 			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
 		}
 
 		global $wpdb;
@@ -534,6 +584,10 @@ class Jugadores_Club {
 			wp_send_json_error( 'Datos inválidos.' );
 		}
 
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
 		$data    = array( 'foto_url' => $foto_url );
 		$formats = array( '%s' );
 
@@ -575,6 +629,10 @@ class Jugadores_Club {
 			wp_send_json_error( 'Datos inválidos.' );
 		}
 
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
 		global $wpdb;
 		$updated = $wpdb->update(
 			$wpdb->prefix . 'club_jugadores',
@@ -611,6 +669,10 @@ class Jugadores_Club {
 
 		if ( ! $club_id || ! $jugador_id || '' === $nombre ) {
 			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
 		}
 
 		global $wpdb;
@@ -659,6 +721,10 @@ class Jugadores_Club {
 
 		if ( ! $club_id || ! $category_uid || '' === $nombre ) {
 			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
 		}
 
 		global $wpdb;
@@ -715,6 +781,10 @@ class Jugadores_Club {
 
 		if ( ! $club_id ) {
 			wp_die( 'Datos inválidos.' );
+		}
+
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_die( 'Sin permisos.' );
 		}
 
 		$categorias = get_field( 'categoria', $club_id );

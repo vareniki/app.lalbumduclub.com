@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'JC_VERSION', '1.0.42' );
+define( 'JC_VERSION', '1.0.44' );
 define( 'JC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JC_URI', plugin_dir_url( __FILE__ ) );
 
@@ -58,22 +58,49 @@ register_activation_hook( __FILE__, 'jc_activate' );
 register_deactivation_hook( __FILE__, 'jc_deactivate' );
 
 /**
- * Registra el rol "Club" en la activación del plugin.
+ * Registra los roles del plugin en cada carga de WordPress.
+ *
+ * - "Club"    — accede únicamente a su propio club (sin capabilities de WP).
+ * - "Gestor"  — gestiona todos los clubs y sus miembros sin acceso completo
+ *               al panel de administración de WordPress.
  */
-function jc_register_club_role() {
-	add_role(
-		'club',
-		__( 'Club', 'jugadores-club' ),
-		array()
-	);
+function jc_register_roles() {
+	// Rol Club: sin capabilities propias (el control de acceso es por club_slug).
+	if ( ! get_role( 'club' ) ) {
+		add_role(
+			'club',
+			__( 'Club', 'jugadores-club' ),
+			array()
+		);
+	}
+
+	// Rol Gestor: gestión completa de posts (clubs) sin privilegios de administrador.
+	if ( ! get_role( 'gestor' ) ) {
+		add_role(
+			'gestor',
+			__( 'Gestor', 'jugadores-club' ),
+			array(
+				'read'                   => true,
+				'edit_posts'             => true,
+				'edit_others_posts'      => true,
+				'edit_published_posts'   => true,
+				'publish_posts'          => true,
+				'delete_posts'           => true,
+				'delete_others_posts'    => true,
+				'delete_published_posts' => true,
+				'upload_files'           => true,
+			)
+		);
+	}
 }
-add_action( 'init', 'jc_register_club_role' );
+add_action( 'init', 'jc_register_roles' );
 
 /**
- * Elimina el rol "Club" en la desactivación del plugin.
+ * Elimina los roles del plugin en la desactivación.
  */
 function jc_deactivate() {
 	remove_role( 'club' );
+	remove_role( 'gestor' );
 }
 
 // Inicializar el plugin.
