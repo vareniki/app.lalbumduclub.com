@@ -53,3 +53,7 @@ function brx_can_show_club_info() {
 
 	return 0;
 }
+
+function brx_show_club_info() {
+
+}

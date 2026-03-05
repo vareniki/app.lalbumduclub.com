@@ -14,10 +14,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'JC_VERSION', '1.0.31' );
+define( 'JC_VERSION', '1.0.42' );
 define( 'JC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JC_URI', plugin_dir_url( __FILE__ ) );
 
+require_once JC_DIR . 'includes/class-estadisticas.php';
+require_once JC_DIR . 'includes/class-clubs-repository.php';
+require_once JC_DIR . 'includes/class-clubs-controller.php';
 require_once JC_DIR . 'includes/class-uploadcare.php';
 require_once JC_DIR . 'includes/class-jugadores-club.php';
 //require_once JC_DIR . 'includes/class-hide-login.php';
@@ -75,4 +78,5 @@ function jc_deactivate() {
 
 // Inicializar el plugin.
 Jugadores_Club::init();
+Clubs_Controller::init();
 //JC_Hide_Login::init();
