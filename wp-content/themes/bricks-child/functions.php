@@ -62,3 +62,36 @@ function brx_can_show_club_info() {
 function brx_show_club_info() {
 
 }
+
+/**
+ * Devuelve la URL de redirección tras el login según el rol del usuario.
+ *
+ * Uso en Bricks Builder: {echo:brx_after_login}
+ *
+ * - administrador → panel de administración de WordPress.
+ * - gestor        → /clubs/ (URL absoluta).
+ * - club          → /club/{club_slug}/ (URL absoluta).
+ * - otros         → página de inicio.
+ *
+ * @return string URL absoluta de redirección.
+ */
+function brx_after_login(): string {
+	$user = wp_get_current_user();
+
+	if ( in_array( 'administrator', $user->roles, true ) ) {
+		return admin_url();
+	}
+
+	if ( in_array( 'gestor', $user->roles, true ) ) {
+		return home_url( '/clubs/' );
+	}
+
+	if ( in_array( 'club', $user->roles, true ) ) {
+		$club_slug = get_field( 'club_slug', 'user_' . $user->ID );
+		if ( $club_slug ) {
+			return home_url( '/club/' . $club_slug . '/' );
+		}
+	}
+
+	return home_url( '/' );
+}

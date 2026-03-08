@@ -28,9 +28,21 @@ class Clubs_Repository {
 	 * Devuelve el total de posts publicados de tipo 'club'.
 	 * Se usa para calcular la paginación.
 	 *
+	 * @param int|null $club_id Si se indica, cuenta solo ese club.
 	 * @return int
 	 */
-	public function get_total(): int {
+	public function get_total( ?int $club_id = null ): int {
+		if ( $club_id !== null ) {
+			return (int) $this->wpdb->get_var( $this->wpdb->prepare(
+				"SELECT COUNT(*)
+				 FROM {$this->wpdb->posts}
+				 WHERE post_type   = 'club'
+				   AND post_status = 'publish'
+				   AND ID = %d",
+				$club_id
+			) );
+		}
+
 		return (int) $this->wpdb->get_var(
 			"SELECT COUNT(*)
 			 FROM {$this->wpdb->posts}
@@ -55,12 +67,17 @@ class Clubs_Repository {
 	 *   - total_fotos_vacias (int)     total_miembros − total_fotos.
 	 *   - porcentaje_fotos   (float)   total_fotos / total_miembros × 100.
 	 *
-	 * @param int $page     Página actual (base 1).
-	 * @param int $per_page Resultados por página.
+	 * @param int      $page     Página actual (base 1).
+	 * @param int      $per_page Resultados por página.
+	 * @param int|null $club_id  Si se indica, devuelve solo ese club.
 	 * @return array<array<string,mixed>>
 	 */
-	public function get_clubs( int $page = 1, int $per_page = 10 ): array {
+	public function get_clubs( int $page = 1, int $per_page = 10, ?int $club_id = null ): array {
 		$offset = ( $page - 1 ) * $per_page;
+
+		$club_filter = $club_id !== null
+			? $this->wpdb->prepare( 'AND p.ID = %d', $club_id )
+			: '';
 
 		$rows = $this->wpdb->get_results( $this->wpdb->prepare(
 			"SELECT
@@ -79,6 +96,7 @@ class Clubs_Repository {
 			    AND pm.meta_key = '_thumbnail_id'
 			 WHERE p.post_type   = 'club'
 			   AND p.post_status = 'publish'
+			   {$club_filter}
 			 GROUP BY p.ID, p.post_title, p.post_excerpt, pm.meta_value
 			 ORDER BY p.post_title ASC
 			 LIMIT %d OFFSET %d",

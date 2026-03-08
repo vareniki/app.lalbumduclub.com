@@ -8,7 +8,7 @@
  *   - page     (int, default 1)   Página actual.
  *   - per_page (int, default 10)  Resultados por página (máx. 100).
  *
- * Requiere que el usuario esté autenticado.
+ * Endpoint público. El filtrado por rol se delega a Bricks Builder.
  *
  * @package JugadoresClub
  */
@@ -52,12 +52,12 @@ class Clubs_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Endpoint público: accesible sin autenticación.
+	 * Endpoint público, sin restricción de acceso.
 	 *
 	 * @param WP_REST_Request $request
 	 * @return true
 	 */
-	public function get_items_permissions_check( $request ) {
+	public function get_items_permissions_check( $request ): true {
 		return true;
 	}
 
@@ -90,7 +90,6 @@ class Clubs_Controller extends WP_REST_Controller {
 		$clubs = $repo->get_clubs( $page, $per_page );
 
 		$response = rest_ensure_response( $clubs );
-
 		$response->header( 'X-WP-Total',      (string) $total );
 		$response->header( 'X-WP-TotalPages', (string) $total_pages );
 
