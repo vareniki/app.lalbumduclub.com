@@ -1,2 +1,22 @@
+# 1. Ignorar absolutamente todo en la carpeta raíz
+/*
+
+# Ignorar configuración del IDE (JetBrains)
+.idea/
+
+# 2. Ignorar archivos del sistema de macOS en cualquier carpeta
+**/.DS_Store
+
+# 3. Evitar ignorar este mismo archivo .gitignore
+!.gitignore
+
+# 4. Ir permitiendo la ruta hacia la carpeta de tu plugin paso a paso
+!/wp-content/
+/wp-content/*
+!/wp-content/plugins/
+/wp-content/plugins/*
+
+# 5. EXCEPCIÓN FINAL: Aquí pones la carpeta exacta de tu plugin que SÍ quieres en Git
+!/wp-content/plugins/jugadores-club/
 /wp-content/plugins/jugadores-club/node_modules/
-/wp-content/themes/app-album/
+/wp-content/plugins/jugadores-club/src/

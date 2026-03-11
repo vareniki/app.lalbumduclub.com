@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'JC_VERSION', '1.0.48' );
+define( 'JC_VERSION', '1.0.61' );
 define( 'JC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JC_URI', plugin_dir_url( __FILE__ ) );
 
@@ -23,6 +23,8 @@ require_once JC_DIR . 'includes/class-clubs-repository.php';
 require_once JC_DIR . 'includes/class-clubs-controller.php';
 require_once JC_DIR . 'includes/class-uploadcare.php';
 require_once JC_DIR . 'includes/class-jugadores-club.php';
+//require_once JC_DIR . 'includes/class-gestor-usuarios.php';
+require_once JC_DIR . 'includes/class-gestor-admin.php';
 //require_once JC_DIR . 'includes/class-hide-login.php';
 
 /**
@@ -74,23 +76,37 @@ function jc_register_roles() {
 		);
 	}
 
-	// Rol Gestor: gestión completa de posts (clubs) sin privilegios de administrador.
+	// Capabilities necesarias para gestionar usuarios en wp-admin.
+	$gestor_caps = array(
+		'read'                   => true,
+		'edit_posts'             => true,
+		'edit_others_posts'      => true,
+		'edit_published_posts'   => true,
+		'publish_posts'          => true,
+		'delete_posts'           => true,
+		'delete_others_posts'    => true,
+		'delete_published_posts' => true,
+		'upload_files'           => true,
+		'manage_club_users'      => true,
+		// Gestión de usuarios (restringida a rol Club mediante hooks).
+		'list_users'             => true,
+		'create_users'           => true,
+		'edit_users'             => true,
+		'delete_users'           => true,
+		'promote_users'          => true,
+	);
+
+	// Rol Gestor: gestión completa de posts (clubs) y usuarios Club.
 	if ( ! get_role( 'gestor' ) ) {
-		add_role(
-			'gestor',
-			__( 'Gestor', 'jugadores-club' ),
-			array(
-				'read'                   => true,
-				'edit_posts'             => true,
-				'edit_others_posts'      => true,
-				'edit_published_posts'   => true,
-				'publish_posts'          => true,
-				'delete_posts'           => true,
-				'delete_others_posts'    => true,
-				'delete_published_posts' => true,
-				'upload_files'           => true,
-			)
-		);
+		add_role( 'gestor', __( 'Gestor', 'jugadores-club' ), $gestor_caps );
+	} else {
+		// Asegurar que todas las capabilities están presentes en instalaciones previas.
+		$gestor_role = get_role( 'gestor' );
+		foreach ( $gestor_caps as $cap => $grant ) {
+			if ( ! isset( $gestor_role->capabilities[ $cap ] ) ) {
+				$gestor_role->add_cap( $cap, $grant );
+			}
+		}
 	}
 }
 add_action( 'init', 'jc_register_roles' );
@@ -106,4 +122,6 @@ function jc_deactivate() {
 // Inicializar el plugin.
 Jugadores_Club::init();
 Clubs_Controller::init();
+//Gestor_Usuarios::init();
+Gestor_Admin::init();
 //JC_Hide_Login::init();
