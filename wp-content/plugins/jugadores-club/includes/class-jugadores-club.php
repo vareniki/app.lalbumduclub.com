@@ -35,9 +35,11 @@ class Jugadores_Club {
 		add_action( 'wp_ajax_album_clear_jugador_foto', array( __CLASS__, 'ajax_clear_foto' ) );
 
 		// AJAX handlers — categorías.
-		add_action( 'wp_ajax_album_add_categoria',      array( __CLASS__, 'ajax_add_categoria' ) );
-		add_action( 'wp_ajax_album_delete_categoria',   array( __CLASS__, 'ajax_delete_categoria' ) );
-		add_action( 'wp_ajax_album_rename_categoria',   array( __CLASS__, 'ajax_rename_categoria' ) );
+		add_action( 'wp_ajax_album_add_categoria',        array( __CLASS__, 'ajax_add_categoria' ) );
+		add_action( 'wp_ajax_album_delete_categoria',     array( __CLASS__, 'ajax_delete_categoria' ) );
+		add_action( 'wp_ajax_album_rename_categoria',     array( __CLASS__, 'ajax_rename_categoria' ) );
+		add_action( 'wp_ajax_album_reorder_categorias',   array( __CLASS__, 'ajax_reorder_categorias' ) );
+		add_action( 'wp_ajax_album_move_jugador',         array( __CLASS__, 'ajax_move_jugador' ) );
 
 		// AJAX handlers — equipo.
 		add_action( 'wp_ajax_album_add_equipo',         array( __CLASS__, 'ajax_add_equipo' ) );
@@ -79,7 +81,7 @@ class Jugadores_Club {
 		$t_equipo = $wpdb->prefix . 'club_equipo';
 
 		$categorias = $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$t_cat} WHERE post_id = %d ORDER BY id ASC",
+			"SELECT * FROM {$t_cat} WHERE post_id = %d ORDER BY menu_order ASC, id ASC",
 			$club_id
 		) );
 
@@ -91,7 +93,7 @@ class Jugadores_Club {
 
 		ob_start();
 		?>
-		<div class="tw:space-y-6" id="club-categorias" data-club-id="<?php echo esc_attr( $club_id ); ?>">
+		<div class="tw:space-y-10" id="club-categorias" data-club-id="<?php echo esc_attr( $club_id ); ?>">
 
 			<!-- Añadir categoría -->
 			<div class="add-categoria-form tw:bg-white tw:rounded-xl tw:shadow-sm tw:border tw:border-gray-200 tw:px-6 tw:py-4 tw:flex tw:items-center tw:gap-3">
@@ -133,6 +135,11 @@ class Jugadores_Club {
 
 				<!-- Cabecera categoría -->
 				<div class="tw:bg-gray-50 tw:border-b tw:border-gray-200 tw:flex tw:items-center">
+					<span class="drag-handle-categoria tw:pl-4 tw:pr-1 tw:shrink-0 tw:text-gray-300 tw:hover:text-gray-500 tw:transition-colors tw:cursor-grab tw:active:cursor-grabbing" title="Arrastrar para reordenar">
+						<svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
+							<path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+						</svg>
+					</span>
 					<button type="button"
 					        class="btn-toggle-categoria tw:flex-1 tw:px-6 tw:py-4 tw:flex tw:items-center tw:justify-between tw:text-left tw:hover:bg-gray-100 tw:transition-colors">
 						<h2 class="tw:text-lg tw:font-semibold tw:text-gray-800"><?php echo $category_name; ?></h2>
@@ -307,6 +314,14 @@ class Jugadores_Club {
 											<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
 										</svg>
 									</button>
+									<!-- Mover a otra categoría -->
+									<button type="button"
+									        class="btn-move-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-indigo-500 tw:transition-colors"
+									        title="Mover a otra categoría">
+										<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+										</svg>
+									</button>
 									<!-- Eliminar -->
 									<button type="button"
 									        class="btn-delete-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors"
@@ -353,6 +368,13 @@ class Jugadores_Club {
 										</button>
 									</div>
 								</div>
+								<!-- Panel de movimiento -->
+								<div class="jugador-move-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-3 tw:bg-gray-50 tw:flex tw:items-center tw:gap-3">
+									<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Mover a:</label>
+									<select class="move-categoria-select tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none tw:bg-white"></select>
+									<button type="button" class="btn-confirm-move tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Mover</button>
+									<button type="button" class="btn-cancel-move tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Cancelar</button>
+								</div>
 								<!-- Foto expandida -->
 								<div class="jugador-foto-expanded tw:hidden tw:px-6 tw:py-4">
 									<?php if ( $jugador->foto_url ) : ?>
@@ -374,23 +396,10 @@ class Jugadores_Club {
 					<?php endif; ?>
 				</div>
 
-				<?php if ( $can_bulk_add ) : ?>
-				<!-- Bulk add -->
-				<div class="bulk-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4">
-					<textarea class="bulk-add__input tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 tw:placeholder-gray-400 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none tw:resize-y"
-					          rows="2"
-					          placeholder="Un jugador por línea: nombre, apellidos, cargo"
-					          data-categoria-id="<?php echo esc_attr( $categoria_id ); ?>"></textarea>
-					<button type="button"
-					        class="btn-bulk-add tw:mt-2 tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors"
-					        data-categoria-id="<?php echo esc_attr( $categoria_id ); ?>">
-						<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-						</svg>
-						Añadir en bulk
-					</button>
+				<!-- Separador añadir jugadores -->
+				<div class="tw:border-t-2 tw:border-gray-200 tw:px-6 tw:py-3 tw:bg-gray-50">
+					<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide">Añadir jugadores</h3>
 				</div>
-				<?php endif; ?>
 				<!-- Single add -->
 				<div class="single-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4"
 				     data-categoria-id="<?php echo esc_attr( $categoria_id ); ?>">
@@ -423,6 +432,23 @@ class Jugadores_Club {
 						</button>
 					</div>
 				</div>
+				<?php if ( $can_bulk_add ) : ?>
+				<!-- Bulk add -->
+				<div class="bulk-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4">
+					<textarea class="bulk-add__input tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 tw:placeholder-gray-400 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none tw:resize-y"
+					          rows="2"
+					          placeholder="Un jugador por línea: nombre, apellidos, cargo"
+					          data-categoria-id="<?php echo esc_attr( $categoria_id ); ?>"></textarea>
+					<button type="button"
+					        class="btn-bulk-add tw:mt-2 tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors"
+					        data-categoria-id="<?php echo esc_attr( $categoria_id ); ?>">
+						<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+						</svg>
+						Añadir en bulk
+					</button>
+				</div>
+				<?php endif; ?>
 				</div><!-- /.category-body -->
 			</section>
 
@@ -1004,7 +1030,7 @@ class Jugadores_Club {
 		$t_equ = $wpdb->prefix . 'club_equipo';
 
 		$categorias = $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$t_cat} WHERE post_id = %d ORDER BY id ASC",
+			"SELECT * FROM {$t_cat} WHERE post_id = %d ORDER BY menu_order ASC, id ASC",
 			$club_id
 		) );
 
@@ -1101,13 +1127,20 @@ class Jugadores_Club {
 		}
 
 		global $wpdb;
+		$t_cat     = $wpdb->prefix . 'club_categorias';
+		$max_order = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COALESCE(MAX(menu_order), -1) FROM {$t_cat} WHERE post_id = %d",
+			$club_id
+		) );
+
 		$wpdb->insert(
-			$wpdb->prefix . 'club_categorias',
+			$t_cat,
 			array(
 				'post_id'     => $club_id,
 				'descripcion' => $descripcion,
+				'menu_order'  => $max_order + 1,
 			),
-			array( '%d', '%s' )
+			array( '%d', '%s', '%d' )
 		);
 
 		if ( ! $wpdb->insert_id ) {
@@ -1222,6 +1255,122 @@ class Jugadores_Club {
 		}
 
 		wp_send_json_success( array( 'descripcion' => $descripcion ) );
+	}
+
+	/**
+	 * Reordena categorías tras drag & drop.
+	 */
+	public static function ajax_reorder_categorias(): void {
+		check_ajax_referer( 'album_club_nonce', 'nonce' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		$club_id      = absint( $_POST['club_id'] ?? 0 );
+		$categoria_ids = json_decode( stripslashes( $_POST['categoria_ids'] ?? '' ), true );
+
+		if ( ! $club_id || ! is_array( $categoria_ids ) ) {
+			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		global $wpdb;
+		$t_cat = $wpdb->prefix . 'club_categorias';
+
+		foreach ( $categoria_ids as $order => $id ) {
+			$id = absint( $id );
+			if ( ! $id ) {
+				continue;
+			}
+
+			// Verificar que la categoría pertenece al club.
+			$post_id = (int) $wpdb->get_var( $wpdb->prepare(
+				"SELECT post_id FROM {$t_cat} WHERE id = %d",
+				$id
+			) );
+
+			if ( $post_id !== $club_id ) {
+				continue;
+			}
+
+			$wpdb->update(
+				$t_cat,
+				array( 'menu_order' => $order ),
+				array( 'id' => $id ),
+				array( '%d' ),
+				array( '%d' )
+			);
+		}
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * Mueve un jugador a otra categoría del mismo club.
+	 */
+	public static function ajax_move_jugador(): void {
+		check_ajax_referer( 'album_club_nonce', 'nonce' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		$club_id      = absint( $_POST['club_id'] ?? 0 );
+		$jugador_id   = absint( $_POST['jugador_id'] ?? 0 );
+		$categoria_id = absint( $_POST['categoria_id'] ?? 0 );
+
+		if ( ! $club_id || ! $jugador_id || ! $categoria_id ) {
+			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		if ( ! self::jugador_belongs_to_club( $jugador_id, $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		global $wpdb;
+		$t_jug = $wpdb->prefix . 'club_jugadores';
+		$t_cat = $wpdb->prefix . 'club_categorias';
+
+		// Verificar que la categoría destino pertenece al club.
+		$cat_post_id = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT post_id FROM {$t_cat} WHERE id = %d",
+			$categoria_id
+		) );
+
+		if ( $cat_post_id !== $club_id ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		// Calcular menu_order en la categoría destino.
+		$max_order = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COALESCE(MAX(menu_order), -1) FROM {$t_jug} WHERE categoria_id = %d",
+			$categoria_id
+		) );
+
+		$updated = $wpdb->update(
+			$t_jug,
+			array(
+				'categoria_id' => $categoria_id,
+				'menu_order'   => $max_order + 1,
+			),
+			array( 'id' => $jugador_id ),
+			array( '%d', '%d' ),
+			array( '%d' )
+		);
+
+		if ( false === $updated ) {
+			wp_send_json_error( 'Error al mover.' );
+		}
+
+		wp_send_json_success();
 	}
 
 	// ─── AJAX handlers — equipo ────────────────────────────

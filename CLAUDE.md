@@ -77,11 +77,12 @@ Tailwind compila `src/style.css` → `assets/css/tailwind.css`.
 #### `wp_club_categorias`
 Categorías de un club (equivale a lo que antes era ACF `categoria`). Cada fila pertenece a un post (club) mediante `post_id`.
 
-| Campo         | Tipo           | Notas                          |
-|---------------|----------------|--------------------------------|
-| `id`          | int (PK, AI)   |                                |
-| `post_id`     | int            | ID del post del club (wp_posts)|
-| `descripcion` | varchar(64)    | Nombre de la categoría         |
+| Campo         | Tipo           | Notas                             |
+|---------------|----------------|-----------------------------------|
+| `id`          | int (PK, AI)   |                                   |
+| `post_id`     | int            | ID del post del club (wp_posts)   |
+| `descripcion` | varchar(64)    | Nombre de la categoría            |
+| `menu_order`  | int            | Orden de visualización, default 0 |
 
 #### `wp_club_jugadores`
 Jugadores del club, vinculados a una categoría mediante FK.

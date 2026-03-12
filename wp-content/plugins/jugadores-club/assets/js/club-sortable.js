@@ -47,6 +47,7 @@
 	// ─── Sortable ──────────────────────────────────────────
 
 	initSortables();
+	initCategoriaSortable();
 
 	function initSortables() {
 		container.querySelectorAll( '.club-jugadores' ).forEach( function ( list ) {
@@ -61,6 +62,32 @@
 				dragClass:       'tw:shadow-lg',
 				onEnd:           onSortEnd,
 			} );
+		} );
+	}
+
+	function initCategoriaSortable() {
+		if ( container._categoriaSortable ) return;
+		container._categoriaSortable = Sortable.create( container, {
+			handle:          '.drag-handle-categoria',
+			draggable:       'section',
+			filter:          'button, input, textarea',
+			preventOnFilter: false,
+			animation:       200,
+			ghostClass:      'tw:opacity-30',
+			dragClass:       'tw:shadow-lg',
+			onEnd:           onCategoriaSortEnd,
+		} );
+	}
+
+	function onCategoriaSortEnd() {
+		var ids = [];
+		container.querySelectorAll( 'section[data-categoria-id]' ).forEach( function ( section ) {
+			ids.push( parseInt( section.dataset.categoriaId, 10 ) );
+		} );
+
+		ajax( 'album_reorder_categorias', {
+			club_id:       clubId,
+			categoria_ids: JSON.stringify( ids ),
 		} );
 	}
 
@@ -226,6 +253,46 @@
 			activeJugadorEl = target.closest( '.club-jugador' );
 			fileInput.value = '';
 			fileInput.click();
+			return;
+		}
+
+		// Mover jugador — abrir panel.
+		target = e.target.closest( '.btn-move-jugador' );
+		if ( target ) {
+			e.preventDefault();
+			e.stopPropagation();
+			var jugadorEl   = target.closest( '.club-jugador' );
+			var movePanel   = jugadorEl.querySelector( '.jugador-move-panel' );
+			var currentCatId = parseInt( jugadorEl.closest( '.club-jugadores' ).dataset.categoriaId, 10 );
+			var select       = movePanel.querySelector( '.move-categoria-select' );
+			select.innerHTML = '';
+			container.querySelectorAll( 'section[data-categoria-id]' ).forEach( function ( section ) {
+				var catId = parseInt( section.dataset.categoriaId, 10 );
+				if ( catId === currentCatId ) return;
+				var opt = document.createElement( 'option' );
+				opt.value       = catId;
+				opt.textContent = section.querySelector( '.btn-toggle-categoria h2' ).textContent;
+				select.appendChild( opt );
+			} );
+			movePanel.classList.toggle( 'tw:hidden' );
+			return;
+		}
+
+		// Mover jugador — confirmar.
+		target = e.target.closest( '.btn-confirm-move' );
+		if ( target ) {
+			e.preventDefault();
+			e.stopPropagation();
+			handleMoveJugador( target );
+			return;
+		}
+
+		// Mover jugador — cancelar.
+		target = e.target.closest( '.btn-cancel-move' );
+		if ( target ) {
+			e.preventDefault();
+			e.stopPropagation();
+			target.closest( '.jugador-move-panel' ).classList.add( 'tw:hidden' );
 			return;
 		}
 
@@ -584,6 +651,43 @@
 		} );
 	}
 
+	// ─── Mover jugador ─────────────────────────────────────
+
+	function handleMoveJugador( btn ) {
+		var panel       = btn.closest( '.jugador-move-panel' );
+		var jugadorEl   = panel.closest( '.club-jugador' );
+		var jugadorId   = jugadorEl.dataset.jugadorId;
+		var select      = panel.querySelector( '.move-categoria-select' );
+		var targetCatId = select.value;
+
+		if ( ! targetCatId ) return;
+
+		btn.disabled = true;
+
+		ajax( 'album_move_jugador', {
+			club_id:      clubId,
+			jugador_id:   jugadorId,
+			categoria_id: targetCatId,
+		}, function ( res ) {
+			btn.disabled = false;
+
+			if ( ! res.success ) return;
+
+			var sourceList    = jugadorEl.closest( '.club-jugadores' );
+			var sourceSection = sourceList.closest( 'section' );
+			var targetSection = container.querySelector( 'section[data-categoria-id="' + targetCatId + '"]' );
+			var targetList    = targetSection.querySelector( '.club-jugadores' );
+
+			panel.classList.add( 'tw:hidden' );
+			targetList.appendChild( jugadorEl );
+
+			updateCount( sourceList );
+			updateCount( targetList );
+			updateDeleteCategoriaBtn( sourceSection );
+			updateDeleteCategoriaBtn( targetSection );
+		} );
+	}
+
 	// ─── Edición inline ────────────────────────────────────
 
 	function handleSaveEdit( btn ) {
@@ -910,9 +1014,18 @@
 			+ '<button type="button" class="btn-edit-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Editar jugador">'
 			+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/></svg>'
 			+ '</button>'
+			+ '<button type="button" class="btn-move-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-indigo-500 tw:transition-colors" title="Mover a otra categoría">'
+			+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>'
+			+ '</button>'
 			+ '<button type="button" class="btn-delete-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-jugador-id="' + j.id + '" title="Eliminar jugador">'
 			+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>'
 			+ '</button>'
+			+ '</div>'
+			+ '<div class="jugador-move-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-3 tw:bg-gray-50 tw:flex tw:items-center tw:gap-3">'
+			+ '<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Mover a:</label>'
+			+ '<select class="move-categoria-select tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none tw:bg-white"></select>'
+			+ '<button type="button" class="btn-confirm-move tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Mover</button>'
+			+ '<button type="button" class="btn-cancel-move tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Cancelar</button>'
 			+ '</div>'
 			+ '<div class="jugador-edit-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-4 tw:bg-gray-50">'
 			+ '<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-3 tw:gap-3">'
@@ -972,10 +1085,11 @@
 	}
 
 	function categoriaHTML( id, descripcion ) {
-		var RENAME_ICON = '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/></svg>';
-		var DELETE_ICON = '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
-		var PLUS_ICON   = '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>';
-		var CHEVRON     = '<svg class="categoria-chevron tw:w-4 tw:h-4 tw:text-gray-400 tw:transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>';
+		var RENAME_ICON  = '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/></svg>';
+		var DELETE_ICON  = '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
+		var PLUS_ICON    = '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>';
+		var CHEVRON      = '<svg class="categoria-chevron tw:w-4 tw:h-4 tw:text-gray-400 tw:transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>';
+		var DRAG_HANDLE  = '<span class="drag-handle-categoria tw:pl-4 tw:pr-1 tw:shrink-0 tw:text-gray-300 tw:hover:text-gray-500 tw:transition-colors tw:cursor-grab tw:active:cursor-grabbing" title="Arrastrar para reordenar"><svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></span>';
 
 		var equipoSection = '<div class="club-equipo-section tw:px-6 tw:pt-4 tw:pb-3 tw:border-b tw:border-gray-100">'
 			+ '<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide tw:mb-3">Fotos de grupo</h3>'
@@ -993,6 +1107,7 @@
 
 		return '<section class="tw:bg-white tw:rounded-xl tw:shadow-sm tw:border tw:border-gray-200 tw:overflow-hidden" data-categoria-id="' + id + '">'
 			+ '<div class="tw:bg-gray-50 tw:border-b tw:border-gray-200 tw:flex tw:items-center">'
+			+ DRAG_HANDLE
 			+ '<button type="button" class="btn-toggle-categoria tw:flex-1 tw:px-6 tw:py-4 tw:flex tw:items-center tw:justify-between tw:text-left tw:hover:bg-gray-100 tw:transition-colors">'
 			+ '<h2 class="tw:text-lg tw:font-semibold tw:text-gray-800">' + escHTML( descripcion ) + '</h2>'
 			+ '<div class="tw:flex tw:items-center tw:gap-3"><span class="club-jugadores-count tw:text-sm tw:text-gray-400">0 jugadores</span>' + CHEVRON + '</div>'
@@ -1011,13 +1126,8 @@
 			+ equipoSection
 			+ membersHeading
 			+ '<div class="club-jugadores tw:divide-y tw:divide-gray-100 tw:min-h-12" data-categoria-id="' + id + '"></div>'
-			+ ( albumClub.canBulkAdd
-				? '<div class="bulk-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4">'
-				+ '<textarea class="bulk-add__input tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 tw:placeholder-gray-400 tw:focus:border-blue-500 tw:outline-none tw:resize-y" rows="2" placeholder="Un jugador por línea: nombre, apellidos, cargo" data-categoria-id="' + id + '"></textarea>'
-				+ '<button type="button" class="btn-bulk-add tw:mt-2 tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors" data-categoria-id="' + id + '">' + PLUS_ICON + 'Añadir en bulk</button>'
-				+ '</div>'
-				: '' )
-			+ '<div class="single-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4" data-categoria-id="' + id + '">'
+						+ '<div class="tw:border-t-2 tw:border-gray-200 tw:px-6 tw:py-3 tw:bg-gray-50"><h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide">Añadir jugadores</h3></div>'
+						+ '<div class="single-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4" data-categoria-id="' + id + '">'
 			+ '<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-3 tw:gap-3">'
 			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre</label><input type="text" class="single-add__nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" placeholder="Nombre"></div>'
 			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Apellidos</label><input type="text" class="single-add__apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" placeholder="Apellidos"></div>'
@@ -1028,6 +1138,12 @@
 			+ '<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p></div>'
 			+ '<div class="tw:mt-3"><button type="button" class="btn-single-add tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors">' + PLUS_ICON + 'Añadir jugador</button></div>'
 			+ '</div>'
++ ( albumClub.canBulkAdd
+				? '<div class="bulk-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4">'
+				+ '<textarea class="bulk-add__input tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 tw:placeholder-gray-400 tw:focus:border-blue-500 tw:outline-none tw:resize-y" rows="2" placeholder="Un jugador por línea: nombre, apellidos, cargo" data-categoria-id="' + id + '"></textarea>'
+				+ '<button type="button" class="btn-bulk-add tw:mt-2 tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors" data-categoria-id="' + id + '">' + PLUS_ICON + 'Añadir en bulk</button>'
+				+ '</div>'
+				: '' )
 			+ '</div>'
 			+ '</section>';
 	}

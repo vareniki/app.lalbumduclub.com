@@ -17,11 +17,13 @@ class Clubs_Repository {
 
 	private wpdb $wpdb;
 	private string $table;
+	private string $table_categorias;
 
 	public function __construct() {
 		global $wpdb;
-		$this->wpdb  = $wpdb;
-		$this->table = $wpdb->prefix . 'club_jugadores';
+		$this->wpdb             = $wpdb;
+		$this->table            = $wpdb->prefix . 'club_jugadores';
+		$this->table_categorias = $wpdb->prefix . 'club_categorias';
 	}
 
 	/**
@@ -89,8 +91,10 @@ class Clubs_Repository {
 				SUM(CASE WHEN cj.nombre_foto IS NOT NULL AND cj.nombre_foto != '' THEN 1 ELSE 0 END) AS total_fotos,
 				SUM(CASE WHEN cj.nombre_foto IS NULL     OR  cj.nombre_foto  = '' THEN 1 ELSE 0 END) AS total_fotos_vacias
 			 FROM {$this->wpdb->posts} p
+			 LEFT JOIN {$this->table_categorias} cc
+			     ON cc.post_id = p.ID
 			 LEFT JOIN {$this->table} cj
-			     ON cj.club_id = p.ID
+			     ON cj.categoria_id = cc.id
 			 LEFT JOIN {$this->wpdb->postmeta} pm
 			     ON pm.post_id = p.ID
 			    AND pm.meta_key = '_thumbnail_id'
