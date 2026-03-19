@@ -171,6 +171,16 @@
 			return;
 		}
 
+		// Ordenar categoría alfabéticamente.
+		target = e.target.closest( '.btn-sort-alfabetico' );
+		if ( target ) {
+			e.preventDefault();
+			e.stopPropagation();
+			if ( ! window.confirm( '¿Ordenar los jugadores de esta categoría por apellidos y nombre? El orden actual se perderá.' ) ) return;
+			handleSortAlfabetico( target );
+			return;
+		}
+
 		// Añadir categoría.
 		target = e.target.closest( '.btn-add-categoria' );
 		if ( target ) {
@@ -293,6 +303,15 @@
 			e.preventDefault();
 			e.stopPropagation();
 			target.closest( '.jugador-move-panel' ).classList.add( 'tw:hidden' );
+			return;
+		}
+
+		// Copiar jugador — confirmar.
+		target = e.target.closest( '.btn-confirm-copy' );
+		if ( target ) {
+			e.preventDefault();
+			e.stopPropagation();
+			handleCopyJugador( target );
 			return;
 		}
 
@@ -564,6 +583,31 @@
 		} );
 	}
 
+	// ─── Ordenar categoría ───────────────────────────────
+
+	function handleSortAlfabetico( btn ) {
+		var section     = btn.closest( 'section' );
+		var categoriaId = parseInt( section.dataset.categoriaId, 10 );
+
+		btn.disabled = true;
+
+		ajax( 'album_sort_alfabetico', {
+			club_id:      clubId,
+			categoria_id: categoriaId,
+		}, function ( res ) {
+			btn.disabled = false;
+
+			if ( ! res.success ) return;
+
+			// Reordenar los elementos del DOM según el nuevo orden.
+			var list = section.querySelector( '.club-jugadores' );
+			res.data.forEach( function ( id ) {
+				var el = list.querySelector( '.club-jugador[data-jugador-id="' + id + '"]' );
+				if ( el ) list.appendChild( el );
+			} );
+		} );
+	}
+
 	// ─── Categorías ────────────────────────────────────────
 
 	function handleAddCategoria( btn ) {
@@ -586,17 +630,14 @@
 
 			if ( ! res.success ) return;
 
-			// Insertar la nueva sección antes del bloque de estadísticas/descarga.
-			var statsEl = document.getElementById( 'club-stats-foto' );
-			var anchor  = statsEl || form.closest( '#club-categorias' ).querySelector( '.tw\\:mt-6.tw\\:mb-6' );
+			// Eliminar mensaje de lista vacía si existe.
+			var emptyMsg = container.querySelector( 'p.tw\\:text-center' );
+			if ( emptyMsg ) emptyMsg.remove();
 
 			var html = categoriaHTML( res.data.id, res.data.descripcion );
 
-			if ( anchor ) {
-				anchor.insertAdjacentHTML( 'beforebegin', html );
-			} else {
-				container.insertAdjacentHTML( 'beforeend', html );
-			}
+			// Insertar dentro de #club-categorias para que herede el space-y-10.
+			container.insertAdjacentHTML( 'beforeend', html );
 
 			initSortables();
 			input.value = '';
@@ -685,6 +726,39 @@
 			updateCount( targetList );
 			updateDeleteCategoriaBtn( sourceSection );
 			updateDeleteCategoriaBtn( targetSection );
+		} );
+	}
+
+	// ─── Copiar jugador ────────────────────────────────────
+
+	function handleCopyJugador( btn ) {
+		var panel       = btn.closest( '.jugador-move-panel' );
+		var jugadorEl   = panel.closest( '.club-jugador' );
+		var jugadorId   = jugadorEl.dataset.jugadorId;
+		var select      = panel.querySelector( '.move-categoria-select' );
+		var targetCatId = select.value;
+
+		if ( ! targetCatId ) return;
+
+		btn.disabled = true;
+
+		ajax( 'album_duplicate_jugador', {
+			club_id:      clubId,
+			jugador_id:   jugadorId,
+			categoria_id: targetCatId,
+		}, function ( res ) {
+			btn.disabled = false;
+
+			if ( ! res.success ) return;
+
+			var targetSection = container.querySelector( 'section[data-categoria-id="' + targetCatId + '"]' );
+			var targetList    = targetSection.querySelector( '.club-jugadores' );
+
+			targetList.insertAdjacentHTML( 'beforeend', playerHTML( res.data ) );
+			updateCount( targetList );
+			updateDeleteCategoriaBtn( targetSection );
+
+			panel.classList.add( 'tw:hidden' );
 		} );
 	}
 
@@ -1022,9 +1096,10 @@
 			+ '</button>'
 			+ '</div>'
 			+ '<div class="jugador-move-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-3 tw:bg-gray-50 tw:flex tw:items-center tw:gap-3">'
-			+ '<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Mover a:</label>'
+			+ '<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Categoría:</label>'
 			+ '<select class="move-categoria-select tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none tw:bg-white"></select>'
 			+ '<button type="button" class="btn-confirm-move tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Mover</button>'
+			+ '<button type="button" class="btn-confirm-copy tw:bg-teal-600 tw:hover:bg-teal-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Copiar</button>'
 			+ '<button type="button" class="btn-cancel-move tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Cancelar</button>'
 			+ '</div>'
 			+ '<div class="jugador-edit-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-4 tw:bg-gray-50">'
@@ -1114,6 +1189,7 @@
 			+ '</button>'
 			+ '<div class="tw:flex tw:items-center tw:gap-1 tw:pr-4">'
 			+ '<button type="button" class="btn-rename-categoria tw:p-2 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors tw:rounded" title="Renombrar categoría">' + RENAME_ICON + '</button>'
+			+ '<button type="button" class="btn-sort-alfabetico tw:p-2 tw:text-gray-300 tw:hover:text-blue-500 tw:transition-colors tw:rounded" title="Ordenar alfabéticamente"><svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0-3.75-3.75M17.25 21 21 17.25"/></svg></button>'
 			+ '<button type="button" class="btn-delete-categoria tw:p-2 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors tw:rounded" title="Eliminar categoría">' + DELETE_ICON + '</button>'
 			+ '</div>'
 			+ '</div>'

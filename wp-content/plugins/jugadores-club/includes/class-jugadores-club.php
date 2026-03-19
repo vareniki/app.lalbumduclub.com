@@ -40,6 +40,8 @@ class Jugadores_Club {
 		add_action( 'wp_ajax_album_rename_categoria',     array( __CLASS__, 'ajax_rename_categoria' ) );
 		add_action( 'wp_ajax_album_reorder_categorias',   array( __CLASS__, 'ajax_reorder_categorias' ) );
 		add_action( 'wp_ajax_album_move_jugador',         array( __CLASS__, 'ajax_move_jugador' ) );
+		add_action( 'wp_ajax_album_duplicate_jugador',    array( __CLASS__, 'ajax_duplicate_jugador' ) );
+		add_action( 'wp_ajax_album_sort_alfabetico',      array( __CLASS__, 'ajax_sort_alfabetico' ) );
 
 		// AJAX handlers — equipo.
 		add_action( 'wp_ajax_album_add_equipo',         array( __CLASS__, 'ajax_add_equipo' ) );
@@ -156,6 +158,13 @@ class Jugadores_Club {
 						        title="Renombrar categoría">
 							<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
+							</svg>
+						</button>
+						<button type="button"
+						        class="btn-sort-alfabetico tw:p-2 tw:text-gray-300 tw:hover:text-blue-500 tw:transition-colors tw:rounded"
+						        title="Ordenar alfabéticamente">
+							<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0-3.75-3.75M17.25 21 21 17.25"/>
 							</svg>
 						</button>
 						<button type="button"
@@ -368,11 +377,12 @@ class Jugadores_Club {
 										</button>
 									</div>
 								</div>
-								<!-- Panel de movimiento -->
+								<!-- Panel de movimiento/copia -->
 								<div class="jugador-move-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-3 tw:bg-gray-50 tw:flex tw:items-center tw:gap-3">
-									<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Mover a:</label>
+									<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Categoría:</label>
 									<select class="move-categoria-select tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none tw:bg-white"></select>
 									<button type="button" class="btn-confirm-move tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Mover</button>
+									<button type="button" class="btn-confirm-copy tw:bg-teal-600 tw:hover:bg-teal-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Copiar</button>
 									<button type="button" class="btn-cancel-move tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Cancelar</button>
 								</div>
 								<!-- Foto expandida -->
@@ -1371,6 +1381,148 @@ class Jugadores_Club {
 		}
 
 		wp_send_json_success();
+	}
+
+	/**
+	 * Duplica un jugador en otra categoría (o en la misma).
+	 */
+	public static function ajax_duplicate_jugador(): void {
+		check_ajax_referer( 'album_club_nonce', 'nonce' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		$club_id      = absint( $_POST['club_id'] ?? 0 );
+		$jugador_id   = absint( $_POST['jugador_id'] ?? 0 );
+		$categoria_id = absint( $_POST['categoria_id'] ?? 0 );
+
+		if ( ! $club_id || ! $jugador_id || ! $categoria_id ) {
+			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		if ( ! self::jugador_belongs_to_club( $jugador_id, $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		global $wpdb;
+		$t_jug = $wpdb->prefix . 'club_jugadores';
+		$t_cat = $wpdb->prefix . 'club_categorias';
+
+		// Verificar que la categoría destino pertenece al club.
+		$cat_post_id = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT post_id FROM {$t_cat} WHERE id = %d",
+			$categoria_id
+		) );
+
+		if ( $cat_post_id !== $club_id ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		// Obtener datos del jugador original.
+		$original = $wpdb->get_row( $wpdb->prepare(
+			"SELECT nombre, apellidos, cargo, nombre_foto, foto_url FROM {$t_jug} WHERE id = %d",
+			$jugador_id
+		) );
+
+		if ( ! $original ) {
+			wp_send_json_error( 'Jugador no encontrado.' );
+		}
+
+		$max_order = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT COALESCE(MAX(menu_order), -1) FROM {$t_jug} WHERE categoria_id = %d",
+			$categoria_id
+		) );
+
+		$wpdb->insert(
+			$t_jug,
+			array(
+				'categoria_id' => $categoria_id,
+				'nombre'       => $original->nombre,
+				'apellidos'    => $original->apellidos,
+				'cargo'        => $original->cargo,
+				'nombre_foto'  => $original->nombre_foto,
+				'foto_url'     => $original->foto_url,
+				'menu_order'   => $max_order + 1,
+			),
+			array( '%d', '%s', '%s', '%s', '%s', '%s', '%d' )
+		);
+
+		if ( ! $wpdb->insert_id ) {
+			wp_send_json_error( 'Error al duplicar.' );
+		}
+
+		wp_send_json_success( array(
+			'id'          => $wpdb->insert_id,
+			'nombre'      => $original->nombre,
+			'apellidos'   => $original->apellidos,
+			'cargo'       => $original->cargo,
+			'nombre_foto' => $original->nombre_foto,
+			'foto_url'    => $original->foto_url,
+			'categoria_id'=> $categoria_id,
+		) );
+	}
+
+	/**
+	 * Ordena los jugadores de una categoría por apellidos y nombre (A→Z).
+	 */
+	public static function ajax_sort_alfabetico(): void {
+		check_ajax_referer( 'album_club_nonce', 'nonce' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		$club_id      = absint( $_POST['club_id'] ?? 0 );
+		$categoria_id = absint( $_POST['categoria_id'] ?? 0 );
+
+		if ( ! $club_id || ! $categoria_id ) {
+			wp_send_json_error( 'Datos inválidos.' );
+		}
+
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		global $wpdb;
+		$t_jug = $wpdb->prefix . 'club_jugadores';
+		$t_cat = $wpdb->prefix . 'club_categorias';
+
+		// Verificar que la categoría pertenece al club.
+		$cat_post_id = (int) $wpdb->get_var( $wpdb->prepare(
+			"SELECT post_id FROM {$t_cat} WHERE id = %d",
+			$categoria_id
+		) );
+
+		if ( $cat_post_id !== $club_id ) {
+			wp_send_json_error( 'Sin permisos.' );
+		}
+
+		// Obtener IDs ordenados alfabéticamente por apellidos, nombre.
+		$ids = $wpdb->get_col( $wpdb->prepare(
+			"SELECT id FROM {$t_jug}
+			 WHERE categoria_id = %d
+			 ORDER BY apellidos COLLATE utf8mb4_unicode_ci ASC,
+			          nombre    COLLATE utf8mb4_unicode_ci ASC",
+			$categoria_id
+		) );
+
+		// Actualizar menu_order según el nuevo orden.
+		foreach ( $ids as $order => $id ) {
+			$wpdb->update(
+				$t_jug,
+				array( 'menu_order' => $order ),
+				array( 'id' => (int) $id ),
+				array( '%d' ),
+				array( '%d' )
+			);
+		}
+
+		wp_send_json_success( array_map( 'intval', $ids ) );
 	}
 
 	// ─── AJAX handlers — equipo ────────────────────────────
