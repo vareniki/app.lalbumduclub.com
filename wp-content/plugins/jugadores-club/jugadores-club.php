@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Jugadores Club
  * Description: Gestión de jugadores por categorías con drag & drop, upload de fotos y shortcode [jugadores-club].
- * Version:     1.0.1
+ * Version:     1.0.76
  * Author:      David Monje
  * License:     GPL v2 or later
  * Text Domain: jugadores-club
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'JC_VERSION', '1.0.72' );
+define( 'JC_VERSION', '1.0.76' );
 define( 'JC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JC_URI', plugin_dir_url( __FILE__ ) );
 

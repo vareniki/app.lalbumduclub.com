@@ -1,14 +1,19 @@
 <?php
 /**
- * Controlador REST para el listado de clubs con estadísticas.
+ * Controlador REST para clubs.
  *
- * Endpoint: GET /wp-json/jugadores-club/v1/clubs
+ * Endpoints:
  *
- * Parámetros de query:
- *   - page     (int, default 1)   Página actual.
- *   - per_page (int, default 10)  Resultados por página (máx. 100).
+ *   GET /wp-json/jugadores-club/v1/clubs
+ *     Lista paginada de clubs con estadísticas de fotos.
+ *     Parámetros: page (int, default 1), per_page (int, default 10, máx. 100).
  *
- * Endpoint público. El filtrado por rol se delega a Bricks Builder.
+ *   GET /wp-json/jugadores-club/v1/album
+ *   GET /wp-json/jugadores-club/v1/album?club_id=X
+ *     Datos completos de todos los clubs (o de uno específico):
+ *     categorías, jugadores y fotos de equipo anidados.
+ *
+ * Ambos endpoints son públicos.
  *
  * @package JugadoresClub
  */
@@ -49,6 +54,27 @@ class Clubs_Controller extends WP_REST_Controller {
 				),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/album',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_album' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => array(
+						'club_id' => array(
+							'description'       => __( 'ID del club. Si se omite, devuelve todos los clubs.', 'jugadores-club' ),
+							'type'              => 'integer',
+							'minimum'           => 1,
+							'sanitize_callback' => 'absint',
+							'validate_callback' => 'rest_validate_request_arg',
+						),
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -57,7 +83,7 @@ class Clubs_Controller extends WP_REST_Controller {
 	 * @param WP_REST_Request $request
 	 * @return true
 	 */
-	public function get_items_permissions_check( $request ): true {
+	public function get_items_permissions_check( $request ): bool {
 		return true;
 	}
 
@@ -94,6 +120,23 @@ class Clubs_Controller extends WP_REST_Controller {
 		$response->header( 'X-WP-TotalPages', (string) $total_pages );
 
 		return $response;
+	}
+
+	/**
+	 * Devuelve los clubs con sus categorías, jugadores y fotos de equipo.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_album( WP_REST_Request $request ): WP_REST_Response {
+		$club_id = $request->get_param( 'club_id' )
+			? (int) $request->get_param( 'club_id' )
+			: null;
+
+		$repo = new Clubs_Repository();
+		$data = $repo->get_album( $club_id );
+
+		return rest_ensure_response( $data );
 	}
 
 	/**

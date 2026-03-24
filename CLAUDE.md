@@ -83,6 +83,8 @@ Categorías de un club (equivale a lo que antes era ACF `categoria`). Cada fila 
 | `post_id`     | int            | ID del post del club (wp_posts)   |
 | `descripcion` | varchar(64)    | Nombre de la categoría            |
 | `menu_order`  | int            | Orden de visualización, default 0 |
+| `created_at`  | datetime       | Auto                              |
+| `updated_at`  | datetime       | Auto on update                    |
 
 #### `wp_club_jugadores`
 Jugadores del club, vinculados a una categoría mediante FK.

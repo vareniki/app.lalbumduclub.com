@@ -14,7 +14,8 @@
 	var container = document.getElementById( 'club-categorias' );
 	if ( ! container ) return;
 
-	var clubId = container.dataset.clubId;
+	var clubId   = container.dataset.clubId;
+	var esMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test( navigator.userAgent );
 
 	// Input de archivo compartido — jugadores.
 	var fileInput           = document.createElement( 'input' );
@@ -438,13 +439,51 @@
 		}
 	} );
 
+	// ─── Helpers de nombre de foto ───────────────────────
+
+	/**
+	 * Devuelve el nombre de archivo a usar para nombre_foto.
+	 * Si el nombre parece auto-generado por cámara/móvil, lo sustituye
+	 * por LALBUM_AAAA-MM-DD-mm-ss + extensión original.
+	 */
+	function resolverNombreFoto( file ) {
+		if ( ! esMobile ) {
+			return file.name.substring( 0, 64 );
+		}
+
+		var ext  = ( file.name.match( /\.[^.]+$/ ) || [ '' ] )[0];
+		var stem = file.name.slice( 0, file.name.length - ext.length );
+
+		// Patrones típicos de cámara de móvil o nombres genéricos:
+		// IMG_XXXX, DSC_XXXX, PXL_XXXX, DCIM_XX, photo, image…
+		// o nombres formados solo por dígitos, guiones y guiones bajos.
+		var esCameraRoll =
+			/^(img|dsc|dscf|dcim|vid|mov|pxl|mvi|cam|photo|picture|image|screenshot|captura|whatsapp.image)/i.test( stem ) ||
+			/^\d[\d_\-]+$/.test( stem );
+
+		if ( ! esCameraRoll ) {
+			return file.name.substring( 0, 64 );
+		}
+
+		var now = new Date();
+		var pad = function ( n ) { return String( n ).padStart( 2, '0' ); };
+		var nombre = 'LALBUM_'
+			+ now.getFullYear()            + '-'
+			+ pad( now.getMonth() + 1 )    + '-'
+			+ pad( now.getDate() )         + '-'
+			+ pad( now.getMinutes() )      + '-'
+			+ pad( now.getSeconds() );
+
+		return ( nombre + ext ).substring( 0, 64 );
+	}
+
 	// ─── Upload handler — jugadores ────────────────────────
 
 	fileInput.addEventListener( 'change', function () {
 		if ( ! fileInput.files.length || ! activeJugadorEl ) return;
 
 		var file          = fileInput.files[0];
-		var fileName      = file.name.substring( 0, 64 );
+		var fileName      = resolverNombreFoto( file );
 		var jugadorEl     = activeJugadorEl;
 		var jugadorId     = jugadorEl.dataset.jugadorId;
 		var trigger       = jugadorEl.querySelector( '.jugador-foto-trigger' );
@@ -510,7 +549,7 @@
 		if ( ! fileInputEquipo.files.length || ! activeEquipoEl ) return;
 
 		var file        = fileInputEquipo.files[0];
-		var fileName    = file.name.substring( 0, 64 );
+		var fileName    = resolverNombreFoto( file );
 		var equipoEl    = activeEquipoEl;
 		var equipoId    = parseInt( equipoEl.dataset.equipoId, 10 );
 		var trigger     = equipoEl.querySelector( '.equipo-foto-trigger' );
