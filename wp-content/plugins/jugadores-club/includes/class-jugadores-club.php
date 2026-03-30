@@ -32,6 +32,7 @@ class Jugadores_Club {
 		add_action( 'wp_ajax_album_update_jugador',     array( __CLASS__, 'ajax_update_jugador' ) );
 		add_action( 'wp_ajax_album_add_jugador',        array( __CLASS__, 'ajax_add_jugador' ) );
 		add_action( 'wp_ajax_album_export_csv',         array( __CLASS__, 'ajax_export_csv' ) );
+		add_action( 'wp_ajax_album_export_zip',         array( __CLASS__, 'ajax_export_zip' ) );
 		add_action( 'wp_ajax_album_clear_jugador_foto', array( __CLASS__, 'ajax_clear_foto' ) );
 
 		// AJAX handlers — categorías.
@@ -89,6 +90,12 @@ class Jugadores_Club {
 
 		$download_url = add_query_arg( array(
 			'action'  => 'album_export_csv',
+			'nonce'   => wp_create_nonce( 'album_club_nonce' ),
+			'club_id' => $club_id,
+		), admin_url( 'admin-ajax.php' ) );
+
+		$zip_url = add_query_arg( array(
+			'action'  => 'album_export_zip',
 			'nonce'   => wp_create_nonce( 'album_club_nonce' ),
 			'club_id' => $club_id,
 		), admin_url( 'admin-ajax.php' ) );
@@ -253,7 +260,7 @@ class Jugadores_Club {
 					</div>
 					<!-- Formulario añadir foto de grupo -->
 					<div class="equipo-add-form tw:mt-3 tw:flex tw:items-center tw:gap-3">
-						<input type="text" class="equipo-add__descripcion tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Descripción (ej. Foto oficial temporada)">
+						<input type="text" class="equipo-add__descripcion tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Descripción (ej. Foto oficial temporada)" value="Foto de Grupo">
 						<button type="button" class="btn-add-equipo tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors" data-categoria-id="<?php echo esc_attr( $categoria_id ); ?>">
 							<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -513,13 +520,20 @@ class Jugadores_Club {
 		</div>
 		<?php endif; ?>
 
-		<div class="tw:mt-6 tw:mb-6 tw:flex tw:justify-end">
+		<div class="tw:mt-6 tw:mb-6 tw:flex tw:justify-end tw:gap-3">
 			<a href="<?php echo esc_url( $download_url ); ?>"
 			   class="tw:inline-flex tw:items-center tw:gap-2 tw:bg-gray-700 tw:hover:bg-gray-800 tw:text-white tw:text-sm tw:font-medium tw:px-5 tw:py-2.5 tw:rounded-lg tw:transition-colors">
 				<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
 				</svg>
 				Descarga la información
+			</a>
+			<a href="<?php echo esc_url( $zip_url ); ?>"
+			   class="tw:inline-flex tw:items-center tw:gap-2 tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-5 tw:py-2.5 tw:rounded-lg tw:transition-colors">
+				<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+				</svg>
+				Descarga Info y Fotos
 			</a>
 		</div>
 
@@ -887,9 +901,9 @@ class Jugadores_Club {
 		global $wpdb;
 		$updated = $wpdb->update(
 			$wpdb->prefix . 'club_jugadores',
-			array( 'foto_url' => '' ),
+			array( 'foto_url' => '', 'nombre_foto' => '' ),
 			array( 'id' => $jugador_id ),
-			array( '%s' ),
+			array( '%s', '%s' ),
 			array( '%d' )
 		);
 
@@ -1111,6 +1125,221 @@ class Jugadores_Club {
 
 		fclose( $output );
 		exit;
+	}
+
+	/**
+	 * Genera y descarga un ZIP con el CSV + fotos organizadas por categoría.
+	 */
+	public static function ajax_export_zip(): void {
+		check_ajax_referer( 'album_club_nonce', 'nonce' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_die( 'Sin permisos.' );
+		}
+
+		$club_id = absint( $_GET['club_id'] ?? 0 );
+
+		if ( ! $club_id ) {
+			wp_die( 'Datos inválidos.' );
+		}
+
+		if ( ! self::user_can_access_club( $club_id ) ) {
+			wp_die( 'Sin permisos.' );
+		}
+
+		if ( ! class_exists( 'ZipArchive' ) ) {
+			wp_die( 'ZipArchive no está disponible en este servidor.' );
+		}
+
+		set_time_limit( 300 );
+
+		global $wpdb;
+		$t_cat = $wpdb->prefix . 'club_categorias';
+		$t_jug = $wpdb->prefix . 'club_jugadores';
+		$t_equ = $wpdb->prefix . 'club_equipo';
+
+		$categorias = $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM {$t_cat} WHERE post_id = %d ORDER BY menu_order ASC, id ASC",
+			$club_id
+		) );
+
+		if ( ! $categorias ) {
+			wp_die( 'Sin categorías.' );
+		}
+
+		$post     = get_post( $club_id );
+		$slug     = $post ? sanitize_file_name( $post->post_title ) : 'club';
+		$date     = gmdate( 'Y-m-d' );
+		$zip_name = 'jugadores-' . $slug . '-' . $date . '.zip';
+
+		$tmp = wp_tempnam( $zip_name );
+
+		$zip = new ZipArchive();
+		if ( true !== $zip->open( $tmp, ZipArchive::OVERWRITE ) ) {
+			wp_die( 'Error al crear el archivo ZIP.' );
+		}
+
+		// Generar contenido CSV.
+		$csv_stream = fopen( 'php://temp', 'r+' );
+		fwrite( $csv_stream, "\xEF\xBB\xBF" );
+
+		foreach ( $categorias as $cat ) {
+			fputcsv( $csv_stream, array( $cat->descripcion ) );
+
+			fputcsv( $csv_stream, array( 'Fotos de grupo' ) );
+			fputcsv( $csv_stream, array( 'nombre_foto', 'foto_url', 'descripcion' ) );
+
+			$equipos = $wpdb->get_results( $wpdb->prepare(
+				"SELECT nombre_foto, foto_url, descripcion
+				 FROM {$t_equ}
+				 WHERE categoria_id = %d
+				 ORDER BY menu_order ASC",
+				(int) $cat->id
+			) );
+
+			foreach ( $equipos as $equipo ) {
+				fputcsv( $csv_stream, array(
+					$equipo->nombre_foto ?? '',
+					$equipo->foto_url,
+					$equipo->descripcion,
+				) );
+			}
+
+			fputcsv( $csv_stream, array( 'Miembros' ) );
+			fputcsv( $csv_stream, array( 'nombre_foto', 'foto_url', 'nombre', 'apellidos', 'cargo' ) );
+
+			$jugadores = $wpdb->get_results( $wpdb->prepare(
+				"SELECT nombre_foto, foto_url, nombre, apellidos, cargo
+				 FROM {$t_jug}
+				 WHERE categoria_id = %d
+				 ORDER BY menu_order ASC",
+				(int) $cat->id
+			) );
+
+			foreach ( $jugadores as $jugador ) {
+				fputcsv( $csv_stream, array(
+					$jugador->nombre_foto ?? '',
+					$jugador->foto_url,
+					$jugador->nombre,
+					$jugador->apellidos,
+					$jugador->cargo,
+				) );
+			}
+
+			fputcsv( $csv_stream, array() );
+		}
+
+		rewind( $csv_stream );
+		$zip->addFromString( 'jugadores-' . $slug . '-' . $date . '.csv', stream_get_contents( $csv_stream ) );
+		fclose( $csv_stream );
+
+		// Añadir fotos al ZIP.
+		$index = 1;
+		foreach ( $categorias as $cat ) {
+			$prefix     = str_pad( $index, 2, '0', STR_PAD_LEFT );
+			$cat_folder = $prefix . '_' . self::normalize_for_filename( $cat->descripcion );
+
+			$equipos = $wpdb->get_results( $wpdb->prepare(
+				"SELECT nombre_foto, foto_url, descripcion
+				 FROM {$t_equ}
+				 WHERE categoria_id = %d
+				 ORDER BY menu_order ASC",
+				(int) $cat->id
+			) );
+
+			foreach ( $equipos as $equipo ) {
+				if ( empty( $equipo->foto_url ) ) {
+					continue;
+				}
+				$url = self::clean_uploadcare_url( $equipo->foto_url );
+				$ext = pathinfo( $equipo->nombre_foto ?? '', PATHINFO_EXTENSION ) ?: 'jpg';
+				$filename = self::normalize_for_filename( $equipo->descripcion ) . '.' . strtolower( $ext );
+				$body     = self::download_file( $url );
+				if ( null !== $body ) {
+					$zip->addFromString( $cat_folder . '/Equipo/' . $filename, $body );
+				}
+			}
+
+			$jugadores = $wpdb->get_results( $wpdb->prepare(
+				"SELECT nombre_foto, foto_url
+				 FROM {$t_jug}
+				 WHERE categoria_id = %d
+				 ORDER BY menu_order ASC",
+				(int) $cat->id
+			) );
+
+			foreach ( $jugadores as $jugador ) {
+				if ( empty( $jugador->foto_url ) ) {
+					continue;
+				}
+				$url      = self::clean_uploadcare_url( $jugador->foto_url );
+				$filename = self::normalize_for_filename( $jugador->nombre_foto ?? 'foto' );
+				if ( ! pathinfo( $filename, PATHINFO_EXTENSION ) ) {
+					$filename .= '.jpg';
+				}
+				$body = self::download_file( $url );
+				if ( null !== $body ) {
+					$zip->addFromString( $cat_folder . '/Jugadores/' . $filename, $body );
+				}
+			}
+
+			$index++;
+		}
+
+		$zip->close();
+
+		header( 'Content-Type: application/zip' );
+		header( 'Content-Disposition: attachment; filename="' . $zip_name . '"' );
+		header( 'Content-Length: ' . filesize( $tmp ) );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		readfile( $tmp );
+		unlink( $tmp );
+		exit;
+	}
+
+	/**
+	 * Normaliza una cadena para usarla como nombre de archivo o carpeta.
+	 * Transliterara acentos, elimina caracteres incompatibles.
+	 */
+	private static function normalize_for_filename( string $name ): string {
+		// Eliminar caracteres incompatibles con sistemas de archivos: / \ : * ? " < > | y control chars.
+		$name = preg_replace( '/[\/\\\\:*?"<>|\x00-\x1f]/', '_', $name );
+		$name = preg_replace( '/_+/', '_', $name );
+		return trim( $name, ' _' ) ?: 'archivo';
+	}
+
+	/**
+	 * Limpia una URL de Uploadcare para obtener la imagen original
+	 * eliminando los parámetros de procesamiento (/-/preview/..., etc.).
+	 */
+	private static function clean_uploadcare_url( string $url ): string {
+		if ( preg_match( '#^(https?://[^/]+/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)#i', $url, $m ) ) {
+			return $m[1];
+		}
+		return $url;
+	}
+
+	/**
+	 * Descarga el contenido de una URL vía la API HTTP de WordPress.
+	 * Devuelve null si hay error o la respuesta no es 200.
+	 */
+	private static function download_file( string $url ): ?string {
+		if ( empty( $url ) ) {
+			return null;
+		}
+		$response = wp_remote_get( $url, array(
+			'timeout'   => 30,
+			'sslverify' => true,
+		) );
+		if ( is_wp_error( $response ) ) {
+			return null;
+		}
+		if ( 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return null;
+		}
+		return wp_remote_retrieve_body( $response );
 	}
 
 	// ─── AJAX handlers — categorías ────────────────────────

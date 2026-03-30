@@ -225,6 +225,11 @@
 				var toggleBtn = jugadorEl.querySelector( '.btn-toggle-foto' );
 				toggleBtn.classList.add( 'tw:hidden' );
 				toggleBtn.querySelector( 'svg' ).classList.remove( 'tw:rotate-180' );
+				var nfSpan = jugadorEl.querySelector( '.jugador-nombre-foto-display' );
+				if ( nfSpan ) nfSpan.remove();
+				jugadorEl.dataset.nombreFoto = '';
+				var editNombreFoto = jugadorEl.querySelector( '.edit-nombre-foto' );
+				if ( editNombreFoto ) editNombreFoto.value = '';
 				if ( ! hadNombreFoto ) {
 					updateStats( 0, -1 );
 				}
@@ -968,7 +973,7 @@
 
 			var grid = btn.closest( '.club-equipo-section' ).querySelector( '.club-equipo' );
 			grid.insertAdjacentHTML( 'beforeend', equipoItemHTML( res.data ) );
-			form.querySelector( '.equipo-add__descripcion' ).value = '';
+			form.querySelector( '.equipo-add__descripcion' ).value = 'Foto de Grupo';
 		} );
 	}
 
@@ -1209,7 +1214,7 @@
 			+ '<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide tw:mb-3">Fotos de grupo</h3>'
 			+ '<div class="club-equipo tw:grid tw:grid-cols-2 tw:sm:grid-cols-4 tw:gap-4" data-categoria-id="' + id + '"></div>'
 			+ '<div class="equipo-add-form tw:mt-3 tw:flex tw:items-center tw:gap-3">'
-			+ '<input type="text" class="equipo-add__descripcion tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Descripción (ej. Foto oficial temporada)">'
+			+ '<input type="text" class="equipo-add__descripcion tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Descripción (ej. Foto oficial temporada)" value="Foto de Grupo">'
 			+ '<button type="button" class="btn-add-equipo tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors" data-categoria-id="' + id + '">'
 			+ PLUS_ICON + 'Añadir foto</button>'
 			+ '</div>'
