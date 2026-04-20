@@ -228,6 +228,7 @@
 				var nfSpan = jugadorEl.querySelector( '.jugador-nombre-foto-display' );
 				if ( nfSpan ) nfSpan.remove();
 				jugadorEl.dataset.nombreFoto = '';
+				updateStatusDot( jugadorEl );
 				var editNombreFoto = jugadorEl.querySelector( '.edit-nombre-foto' );
 				if ( editNombreFoto ) editNombreFoto.value = '';
 				if ( ! hadNombreFoto ) {
@@ -252,10 +253,12 @@
 				jugador_id: jugadorId,
 			}, function ( res ) {
 				if ( res.success ) {
+					var section = list.closest( 'section' );
 					row.remove();
 					updateCount( list );
 					updateStats( -1, hadFoto ? -1 : 0 );
-					updateDeleteCategoriaBtn( list.closest( 'section' ) );
+					updateDeleteCategoriaBtn( section );
+					updateCategoriaStatusDot( section );
 				}
 			} );
 			return;
@@ -529,6 +532,7 @@
 				}
 			}
 			jugadorEl.dataset.nombreFoto = fileName;
+			updateStatusDot( jugadorEl );
 
 			var editInput = jugadorEl.querySelector( '.edit-nombre-foto' );
 			if ( editInput ) {
@@ -770,6 +774,8 @@
 			updateCount( targetList );
 			updateDeleteCategoriaBtn( sourceSection );
 			updateDeleteCategoriaBtn( targetSection );
+			updateCategoriaStatusDot( sourceSection );
+			updateCategoriaStatusDot( targetSection );
 		} );
 	}
 
@@ -801,6 +807,7 @@
 			targetList.insertAdjacentHTML( 'beforeend', playerHTML( res.data ) );
 			updateCount( targetList );
 			updateDeleteCategoriaBtn( targetSection );
+			updateCategoriaStatusDot( targetSection );
 
 			panel.classList.add( 'tw:hidden' );
 		} );
@@ -855,6 +862,7 @@
 				updateStats( 0, hasFoto ? 1 : -1 );
 			}
 			jugadorEl.dataset.nombreFoto = nuevoNombreFoto;
+			updateStatusDot( jugadorEl );
 
 			panel.classList.add( 'tw:hidden' );
 		} );
@@ -901,6 +909,7 @@
 			updateCount( list );
 			updateStats( res.data.length, 0 );
 			updateDeleteCategoriaBtn( section );
+			updateCategoriaStatusDot( section );
 		} );
 	}
 
@@ -940,6 +949,7 @@
 			updateCount( list );
 			updateStats( 1, res.data.nombre_foto || res.data.foto_url ? 1 : 0 );
 			updateDeleteCategoriaBtn( section );
+			updateCategoriaStatusDot( section );
 
 			formEl.querySelector( '.single-add__nombre' ).value      = '';
 			formEl.querySelector( '.single-add__apellidos' ).value   = '';
@@ -1107,6 +1117,42 @@
 		badge.textContent = n + ' jugador' + ( n !== 1 ? 'es' : '' );
 	}
 
+	function updateStatusDot( jugadorEl ) {
+		var dot = jugadorEl.querySelector( '.jugador-status-dot' );
+		if ( ! dot ) return;
+		var hasNombreFoto = !! jugadorEl.dataset.nombreFoto;
+		dot.classList.toggle( 'tw:bg-green-400', hasNombreFoto );
+		dot.classList.toggle( 'tw:bg-amber-400', ! hasNombreFoto );
+		dot.title = hasNombreFoto ? 'Foto asignada' : 'Sin foto';
+		updateCategoriaStatusDot( jugadorEl.closest( 'section' ) );
+	}
+
+	function updateCategoriaStatusDot( section ) {
+		if ( ! section ) return;
+		var dot = section.querySelector( '.categoria-status-dot' );
+		if ( ! dot ) return;
+		var jugadores = section.querySelectorAll( '.club-jugadores .club-jugador' );
+		var total     = jugadores.length;
+		dot.classList.remove( 'tw:bg-gray-300', 'tw:bg-red-400', 'tw:bg-amber-400', 'tw:bg-green-400' );
+		if ( total === 0 ) {
+			dot.classList.add( 'tw:bg-gray-300' );
+			dot.title = 'Sin jugadores';
+			return;
+		}
+		var conFoto = 0;
+		jugadores.forEach( function ( j ) { if ( j.dataset.nombreFoto ) conFoto++; } );
+		if ( conFoto === 0 ) {
+			dot.classList.add( 'tw:bg-red-400' );
+			dot.title = 'Ningún jugador tiene foto asignada';
+		} else if ( conFoto === total ) {
+			dot.classList.add( 'tw:bg-green-400' );
+			dot.title = 'Todos los jugadores tienen foto asignada';
+		} else {
+			dot.classList.add( 'tw:bg-amber-400' );
+			dot.title = 'Algunos jugadores tienen foto asignada';
+		}
+	}
+
 	function playerHTML( j ) {
 		var foto = j.foto_url
 			? '<img class="tw:w-full tw:h-full tw:object-cover" src="' + escAttr( j.foto_url ) + '" alt="' + escAttr( j.nombre ) + '">'
@@ -1138,6 +1184,7 @@
 			+ '<button type="button" class="btn-delete-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-jugador-id="' + j.id + '" title="Eliminar jugador">'
 			+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>'
 			+ '</button>'
+			+ '<span class="jugador-status-dot tw:shrink-0 tw:w-2 tw:h-2 tw:rounded-full ' + ( j.nombre_foto ? 'tw:bg-green-400' : 'tw:bg-amber-400' ) + '" title="' + ( j.nombre_foto ? 'Foto asignada' : 'Sin foto' ) + '"></span>'
 			+ '</div>'
 			+ '<div class="jugador-move-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-3 tw:bg-gray-50 tw:flex tw:items-center tw:gap-3">'
 			+ '<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Categoría:</label>'

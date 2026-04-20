@@ -133,6 +133,22 @@ class Jugadores_Club {
 				) );
 				$num_jugadores = count( $jugadores );
 
+				// Indicador de estado de la categoría.
+				$con_foto_j = count( array_filter( (array) $jugadores, fn( $j ) => ! empty( $j->nombre_foto ) ) );
+				if ( $num_jugadores === 0 ) {
+					$cat_dot       = 'tw:bg-gray-300';
+					$cat_dot_title = 'Sin jugadores';
+				} elseif ( $con_foto_j === 0 ) {
+					$cat_dot       = 'tw:bg-red-400';
+					$cat_dot_title = 'Ningún jugador tiene foto asignada';
+				} elseif ( $con_foto_j === $num_jugadores ) {
+					$cat_dot       = 'tw:bg-green-400';
+					$cat_dot_title = 'Todos los jugadores tienen foto asignada';
+				} else {
+					$cat_dot       = 'tw:bg-amber-400';
+					$cat_dot_title = 'Algunos jugadores tienen foto asignada';
+				}
+
 				$equipos = $wpdb->get_results( $wpdb->prepare(
 					"SELECT * FROM {$t_equipo} WHERE categoria_id = %d ORDER BY menu_order ASC",
 					$categoria_id
@@ -154,6 +170,8 @@ class Jugadores_Club {
 						<h2 class="tw:text-lg tw:font-semibold tw:text-gray-800"><?php echo $category_name; ?></h2>
 						<div class="tw:flex tw:items-center tw:gap-3">
 							<span class="club-jugadores-count tw:text-sm tw:text-gray-400"><?php echo $num_jugadores; ?> jugador<?php echo $num_jugadores !== 1 ? 'es' : ''; ?></span>
+							<span class="categoria-status-dot tw:w-2.5 tw:h-2.5 tw:rounded-full <?php echo $cat_dot; ?>"
+							      title="<?php echo esc_attr( $cat_dot_title ); ?>"></span>
 							<svg class="categoria-chevron tw:w-4 tw:h-4 tw:text-gray-400 tw:transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
 							</svg>
@@ -347,6 +365,9 @@ class Jugadores_Club {
 											<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
 										</svg>
 									</button>
+									<!-- Indicador de estado -->
+									<span class="jugador-status-dot tw:shrink-0 tw:w-2 tw:h-2 tw:rounded-full <?php echo ! empty( $jugador->nombre_foto ) ? 'tw:bg-green-400' : 'tw:bg-amber-400'; ?>"
+									      title="<?php echo ! empty( $jugador->nombre_foto ) ? 'Foto asignada' : 'Sin foto'; ?>"></span>
 								</div>
 								<!-- Panel de edición -->
 								<div class="jugador-edit-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-4 tw:bg-gray-50">
