@@ -14,9 +14,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'JC_VERSION', '1.0.84' );
+define( 'JC_VERSION', '1.0.88' );
 define( 'JC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JC_URI', plugin_dir_url( __FILE__ ) );
+
+// API key para los endpoints REST. Puede sobreescribirse en wp-config.php.
+if ( ! defined( 'JC_API_KEY' ) ) {
+	define( 'JC_API_KEY', 'Lalbum_2026_04' );
+}
 
 require_once JC_DIR . 'includes/class-estadisticas.php';
 require_once JC_DIR . 'includes/class-clubs-repository.php';

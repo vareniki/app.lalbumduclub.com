@@ -77,30 +77,27 @@ Tailwind compila `src/style.css` → `assets/css/tailwind.css`.
 #### `wp_club_categorias`
 Categorías de un club (equivale a lo que antes era ACF `categoria`). Cada fila pertenece a un post (club) mediante `post_id`.
 
-| Campo         | Tipo           | Notas                             |
-|---------------|----------------|-----------------------------------|
-| `id`          | int (PK, AI)   |                                   |
-| `post_id`     | int            | ID del post del club (wp_posts)   |
-| `descripcion` | varchar(64)    | Nombre de la categoría            |
-| `menu_order`  | int            | Orden de visualización, default 0 |
-| `created_at`  | datetime       | Auto                              |
-| `updated_at`  | datetime       | Auto on update                    |
+| Campo         | Tipo         | Notas                           |
+|---------------|--------------|---------------------------------|
+| `id`          | int (PK, AI) |                                 |
+| `post_id`     | int          | ID del post del club (wp_posts) |
+| `descripcion` | varchar(64)  | Nombre de la categoría          |
 
 #### `wp_club_jugadores`
 Jugadores del club, vinculados a una categoría mediante FK.
 
-| Campo          | Tipo           | Notas                                     |
-|----------------|----------------|-------------------------------------------|
-| `id`           | int (PK, AI)   |                                           |
-| `categoria_id` | int            | FK → `wp_club_categorias.id`              |
-| `nombre`       | varchar(64)    | Nombre de la persona                      |
-| `apellidos`    | varchar(64)    | Apellidos de la persona                   |
-| `nombre_foto`  | varchar(64)    | Nombre de archivo de foto                 |
-| `cargo`        | varchar(32)    | Cargo de la persona (nullable)            |
-| `foto_url`     | varchar(256)   | URL de la foto (Uploadcare), default ''   |
-| `menu_order`   | int            | Orden de visualización, default 0         |
-| `created_at`   | datetime       | Auto                                      |
-| `updated_at`   | datetime       | Auto on update                            |
+| Campo          | Tipo         | Notas                                   |
+|----------------|--------------|-----------------------------------------|
+| `id`           | int (PK, AI) |                                         |
+| `categoria_id` | int          | FK → `wp_club_categorias.id` (nullable) |
+| `nombre`       | varchar(64)  | NOT NULL                                |
+| `apellidos`    | varchar(64)  | NOT NULL                                |
+| `nombre_foto`  | varchar(64)  | NOT NULL                                |
+| `cargo`        | varchar(32)  | nullable                                |
+| `foto_url`     | varchar(256) | URL Uploadcare, default ''              |
+| `menu_order`   | int          | Orden de visualización, default 0       |
+| `created_at`   | datetime     | Auto (CURRENT_TIMESTAMP)                |
+| `updated_at`   | datetime     | Auto on update (CURRENT_TIMESTAMP)      |
 
 Índices: `order_index(menu_order)`. FK: `wp_club_jugadores_wp_club_categorias_id_fk(categoria_id)`. Collation: `utf8mb4_unicode_ci`.
 
@@ -118,54 +115,6 @@ Fotos de grupo por categoría. Cada fila representa una foto de equipo vinculada
 | `created_at`   | datetime       | Auto                                    |
 | `updated_at`   | datetime       | Auto on update                          |
 
-
-### Tablas personalizadas para Backup. La estructura es idéntica a las anteriores
-
-#### `wp_club_categorias_bak`
-Categorías de un club. Cada fila pertenece a un post (club) mediante `post_id`.
-
-| Campo         | Tipo           | Notas                             |
-|---------------|----------------|-----------------------------------|
-| `id`          | int (PK, AI)   |                                   |
-| `post_id`     | int            | ID del post del club (wp_posts)   |
-| `descripcion` | varchar(64)    | Nombre de la categoría            |
-| `menu_order`  | int            | Orden de visualización, default 0 |
-| `created_at`  | datetime       | Auto                              |
-| `updated_at`  | datetime       | Auto on update                    |
-
-#### `wp_club_jugadores_bak`
-Jugadores del club, vinculados a una categoría mediante FK.
-
-| Campo          | Tipo           | Notas                                     |
-|----------------|----------------|-------------------------------------------|
-| `id`           | int (PK, AI)   |                                           |
-| `categoria_id` | int            | FK → `wp_club_categorias_bak.id`              |
-| `nombre`       | varchar(64)    | Nombre de la persona                      |
-| `apellidos`    | varchar(64)    | Apellidos de la persona                   |
-| `nombre_foto`  | varchar(64)    | Nombre de archivo de foto                 |
-| `cargo`        | varchar(32)    | Cargo de la persona (nullable)            |
-| `foto_url`     | varchar(256)   | URL de la foto (Uploadcare), default ''   |
-| `menu_order`   | int            | Orden de visualización, default 0         |
-| `created_at`   | datetime       | Auto                                      |
-| `updated_at`   | datetime       | Auto on update                            |
-
-Índices: `order_index(menu_order)`. FK: `wp_club_jugadores_bak_wp_club_categorias_id_fk(categoria_id)`. Collation: `utf8mb4_unicode_ci`.
-
-#### `wp_club_equipo_bak`
-Fotos de grupo por categoría. Cada fila representa una foto de equipo vinculada a una categoría.
-
-| Campo          | Tipo           | Notas                                   |
-|----------------|----------------|-----------------------------------------|
-| `id`           | int (PK, AI)   |                                         |
-| `categoria_id` | int            | FK → `wp_club_categorias_bak.id` (nullable) |
-| `descripcion`  | varchar(64)    | Descripción de la foto (NOT NULL)       |
-| `nombre_foto`  | varchar(64)    | Nombre de archivo de foto               |
-| `foto_url`     | varchar(256)   | URL de la foto (Uploadcare), default '' |
-| `menu_order`   | int            | Orden de visualización, default 0       |
-| `created_at`   | datetime       | Auto                                    |
-| `updated_at`   | datetime       | Auto on update                          |
-
-FK: `wp_club_equipo_bak_wp_club_categorias_id_fk(categoria_id)`. Collation: `utf8mb4_unicode_ci`.
 
 ## Entorno local
 

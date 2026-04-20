@@ -13,7 +13,12 @@
  *     Datos completos de todos los clubs (o de uno específico):
  *     categorías, jugadores y fotos de equipo anidados.
  *
- * Ambos endpoints son públicos.
+ *   GET /wp-json/jugadores-club/v1/backup
+ *     Descarga un ZIP con tres archivos SQL (INSERT statements) de las tablas
+ *     wp_club_categorias, wp_club_jugadores y wp_club_equipo.
+ *
+ * Todos los endpoints requieren la cabecera:
+ *   X-API-Key: <valor de la constante JC_API_KEY>
  *
  * @package JugadoresClub
  */
@@ -49,7 +54,7 @@ class Clubs_Controller extends WP_REST_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_items' ),
-					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'permission_callback' => array( $this, 'check_api_key' ),
 					'args'                => $this->get_collection_params(),
 				),
 			)
@@ -62,7 +67,7 @@ class Clubs_Controller extends WP_REST_Controller {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_album' ),
-					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'permission_callback' => array( $this, 'check_api_key' ),
 					'args'                => array(
 						'club_id' => array(
 							'description'       => __( 'ID del club. Si se omite, devuelve todos los clubs.', 'jugadores-club' ),
@@ -75,15 +80,37 @@ class Clubs_Controller extends WP_REST_Controller {
 				),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/backup',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_backup' ),
+					'permission_callback' => array( $this, 'check_api_key' ),
+				),
+			)
+		);
 	}
 
 	/**
-	 * Endpoint público, sin restricción de acceso.
+	 * Valida la API key enviada en la cabecera X-API-Key.
 	 *
 	 * @param WP_REST_Request $request
-	 * @return true
+	 * @return true|WP_Error
 	 */
-	public function get_items_permissions_check( $request ): bool {
+	public function check_api_key( WP_REST_Request $request ) {
+		$key = $request->get_header( 'X-API-Key' );
+
+		if ( ! $key || ! hash_equals( JC_API_KEY, $key ) ) {
+			return new WP_Error(
+				'rest_forbidden',
+				__( 'API key inválida o ausente.', 'jugadores-club' ),
+				array( 'status' => 401 )
+			);
+		}
+
 		return true;
 	}
 
@@ -164,5 +191,106 @@ class Clubs_Controller extends WP_REST_Controller {
 				'validate_callback' => 'rest_validate_request_arg',
 			),
 		);
+	}
+
+	/**
+	 * Genera un ZIP con tres archivos SQL (INSERT statements) y lo descarga.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return void
+	 */
+	public function get_backup( WP_REST_Request $request ): void {
+		global $wpdb;
+
+		if ( ! class_exists( 'ZipArchive' ) ) {
+			wp_send_json_error( array( 'message' => 'La extensión ZipArchive no está disponible en el servidor.' ), 500 );
+		}
+
+		$tables = array(
+			$wpdb->prefix . 'club_categorias',
+			$wpdb->prefix . 'club_jugadores',
+			$wpdb->prefix . 'club_equipo',
+		);
+
+		$tmp_file = tempnam( sys_get_temp_dir(), 'jc_backup_' ) . '.zip';
+		$zip      = new ZipArchive();
+
+		if ( $zip->open( $tmp_file, ZipArchive::CREATE | ZipArchive::OVERWRITE ) !== true ) {
+			wp_send_json_error( array( 'message' => 'No se pudo crear el archivo ZIP temporal.' ), 500 );
+		}
+
+		foreach ( $tables as $table ) {
+			$zip->addFromString( $table . '.sql', self::generate_sql_inserts( $table ) );
+		}
+
+		$zip->close();
+
+		$filename = 'backup_lalbumduclub_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
+
+		header( 'Content-Type: application/zip' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'Content-Length: ' . filesize( $tmp_file ) );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		// Evitar que la REST API sobreescriba las cabeceras con JSON.
+		remove_all_filters( 'rest_pre_serve_request' );
+
+		readfile( $tmp_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
+		unlink( $tmp_file );   // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+		exit;
+	}
+
+	/**
+	 * Genera el contenido SQL con sentencias INSERT para una tabla.
+	 *
+	 * @param string $table Nombre completo de la tabla (con prefijo).
+	 * @return string
+	 */
+	private static function generate_sql_inserts( string $table ): string {
+		global $wpdb;
+
+		$generated_at = gmdate( 'Y-m-d H:i:s' );
+
+		// Obtener el DDL real de la tabla via SHOW CREATE TABLE.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$create_row = $wpdb->get_row( "SHOW CREATE TABLE `{$table}`", ARRAY_N );
+		$create_ddl = $create_row ? $create_row[1] : "-- No se pudo obtener el DDL de `{$table}`";
+
+		// Obtener todas las filas. Tabla controlada internamente, sin riesgo de inyección.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = $wpdb->get_results( "SELECT * FROM `{$table}`", ARRAY_A );
+
+		$lines = array(
+			"-- Backup de `{$table}`",
+			"-- Generado: {$generated_at} UTC",
+			'',
+			"DROP TABLE IF EXISTS `{$table}`;",
+			$create_ddl . ';',
+			'',
+		);
+
+		if ( empty( $rows ) ) {
+			$lines[] = "-- La tabla está vacía, no hay INSERTs.";
+			return implode( "\n", $lines ) . "\n";
+		}
+
+		$columns = '`' . implode( '`, `', array_keys( $rows[0] ) ) . '`';
+
+		foreach ( $rows as $row ) {
+			$values = array_map(
+				static function ( $val ): string {
+					if ( $val === null ) {
+						return 'NULL';
+					}
+					return "'" . esc_sql( $val ) . "'";
+				},
+				array_values( $row )
+			);
+
+			$lines[] = "INSERT INTO `{$table}` ({$columns}) VALUES (" . implode( ', ', $values ) . ");";
+		}
+
+		return implode( "\n", $lines ) . "\n";
 	}
 }
