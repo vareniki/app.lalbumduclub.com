@@ -70,7 +70,12 @@ class Jugadores_Club {
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			return '';
+			if ( ! is_user_logged_in() ) {
+				return '';
+			}
+			return '<div class="tw:rounded-xl tw:border tw:border-red-200 tw:bg-red-50 tw:px-6 tw:py-10 tw:text-center">'
+				. '<p class="tw:text-red-600 tw:font-medium tw:text-sm">No tienes permiso para gestionar este club.</p>'
+				. '</div>';
 		}
 
 		self::$enqueue = true;
@@ -618,23 +623,34 @@ class Jugadores_Club {
 	private static function user_can_access_club( int $club_id ): bool {
 		$user = wp_get_current_user();
 
-		if ( ! in_array( 'club', (array) $user->roles, true ) ) {
+		// Admin → acceso total.
+		if ( current_user_can( 'manage_options' ) ) {
 			return true;
 		}
 
-		$club_slug = get_field( 'club_slug', 'user_' . $user->ID );
-
-		if ( empty( $club_slug ) ) {
-			return false;
+		// Gestor → solo los clubs que tenga asignados.
+		if ( in_array( 'gestor', (array) $user->roles, true ) ) {
+			return in_array( $club_id, jc_get_gestor_clubs( $user->ID ), true );
 		}
 
-		$post = get_post( $club_id );
+		// Rol Club → solo su club (identificado por club_slug).
+		if ( in_array( 'club', (array) $user->roles, true ) ) {
+			$club_slug = get_field( 'club_slug', 'user_' . $user->ID );
 
-		if ( ! $post ) {
-			return false;
+			if ( empty( $club_slug ) ) {
+				return false;
+			}
+
+			$post = get_post( $club_id );
+
+			if ( ! $post ) {
+				return false;
+			}
+
+			return str_ends_with( $post->post_name, $club_slug );
 		}
 
-		return str_ends_with( $post->post_name, $club_slug );
+		return false;
 	}
 
 	/**

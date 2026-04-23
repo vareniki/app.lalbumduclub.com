@@ -29,22 +29,61 @@ class Clubs_Repository {
 	}
 
 	/**
+	 * Normaliza los filtros de IDs en un único array o null.
+	 *
+	 * - Si $club_id y $only_ids son null → null (sin filtro de IDs).
+	 * - Si solo uno está presente → devuelve ese filtro como array.
+	 * - Si ambos están presentes → devuelve la intersección.
+	 * - Si la intersección está vacía → devuelve [] (sin resultados).
+	 *
+	 * @param int|null   $club_id  ID concreto de club, o null.
+	 * @param int[]|null $only_ids Lista de IDs permitidos, o null.
+	 * @return int[]|null
+	 */
+	private function build_ids_filter( ?int $club_id, ?array $only_ids ): ?array {
+		if ( $club_id === null && $only_ids === null ) {
+			return null;
+		}
+
+		if ( $club_id !== null && $only_ids === null ) {
+			return array( $club_id );
+		}
+
+		if ( $club_id === null ) {
+			return $only_ids;
+		}
+
+		// Ambos presentes: intersección.
+		return in_array( $club_id, $only_ids, true ) ? array( $club_id ) : array();
+	}
+
+	/**
 	 * Devuelve el total de posts publicados de tipo 'club'.
 	 * Se usa para calcular la paginación.
 	 *
-	 * @param int|null $club_id Si se indica, cuenta solo ese club.
+	 * @param int|null   $club_id  Si se indica, cuenta solo ese club.
+	 * @param int[]|null $only_ids Si se indica, restringe el conteo a esos IDs.
 	 * @return int
 	 */
-	public function get_total( ?int $club_id = null ): int {
-		if ( $club_id !== null ) {
-			return (int) $this->wpdb->get_var( $this->wpdb->prepare(
-				"SELECT COUNT(*)
-				 FROM {$this->wpdb->posts}
-				 WHERE post_type   = 'club'
-				   AND post_status = 'publish'
-				   AND ID = %d",
-				$club_id
-			) );
+	public function get_total( ?int $club_id = null, ?array $only_ids = null ): int {
+		// Calcula la intersección: si hay both filtros, usa el más restrictivo.
+		$ids_filter = $this->build_ids_filter( $club_id, $only_ids );
+
+		if ( $ids_filter !== null ) {
+			if ( empty( $ids_filter ) ) {
+				return 0;
+			}
+			$placeholders = implode( ',', array_fill( 0, count( $ids_filter ), '%d' ) );
+			return (int) $this->wpdb->get_var(
+				$this->wpdb->prepare(
+					"SELECT COUNT(*)
+					 FROM {$this->wpdb->posts}
+					 WHERE post_type   = 'club'
+					   AND post_status = 'publish'
+					   AND ID IN ({$placeholders})",
+					...$ids_filter
+				)
+			);
 		}
 
 		return (int) $this->wpdb->get_var(
@@ -71,17 +110,25 @@ class Clubs_Repository {
 	 *   - total_fotos_vacias (int)     total_miembros − total_fotos.
 	 *   - porcentaje_fotos   (float)   total_fotos / total_miembros × 100.
 	 *
-	 * @param int      $page     Página actual (base 1).
-	 * @param int      $per_page Resultados por página.
-	 * @param int|null $club_id  Si se indica, devuelve solo ese club.
+	 * @param int        $page     Página actual (base 1).
+	 * @param int        $per_page Resultados por página.
+	 * @param int|null   $club_id  Si se indica, devuelve solo ese club.
+	 * @param int[]|null $only_ids Si se indica, restringe a esos IDs (p.ej. clubs de un gestor).
 	 * @return array<array<string,mixed>>
 	 */
-	public function get_clubs( int $page = 1, int $per_page = 10, ?int $club_id = null ): array {
+	public function get_clubs( int $page = 1, int $per_page = 10, ?int $club_id = null, ?array $only_ids = null ): array {
 		$offset = ( $page - 1 ) * $per_page;
 
-		$club_filter = $club_id !== null
-			? $this->wpdb->prepare( 'AND p.ID = %d', $club_id )
-			: '';
+		$ids_filter  = $this->build_ids_filter( $club_id, $only_ids );
+		$club_filter = '';
+
+		if ( $ids_filter !== null ) {
+			if ( empty( $ids_filter ) ) {
+				return array();
+			}
+			$placeholders = implode( ',', array_fill( 0, count( $ids_filter ), '%d' ) );
+			$club_filter  = $this->wpdb->prepare( "AND p.ID IN ({$placeholders})", ...$ids_filter );
+		}
 
 		$rows = $this->wpdb->get_results( $this->wpdb->prepare(
 			"SELECT
@@ -151,21 +198,30 @@ class Clubs_Repository {
 	 *     - equipo       (array)  fotos de grupo, ordenadas por menu_order
 	 *     - jugadores    (array)  ordenados por menu_order
 	 *
-	 * @param int|null $club_id  Si se indica, filtra por ese club.
+	 * @param int|null   $club_id  Si se indica, filtra por ese club.
+	 * @param int[]|null $only_ids Si se indica, restringe a esos IDs.
 	 * @return array<array<string,mixed>>
 	 */
-	public function get_album( ?int $club_id = null ): array {
+	public function get_album( ?int $club_id = null, ?array $only_ids = null ): array {
 		// 1. Clubs.
-		if ( $club_id !== null ) {
-			$clubs_rows = $this->wpdb->get_results( $this->wpdb->prepare(
-				"SELECT p.ID AS club_id, p.post_title AS nombre
-				 FROM {$this->wpdb->posts} p
-				 WHERE p.post_type   = 'club'
-				   AND p.post_status = 'publish'
-				   AND p.ID = %d
-				 ORDER BY p.post_title ASC",
-				$club_id
-			) );
+		$ids_filter = $this->build_ids_filter( $club_id, $only_ids );
+
+		if ( $ids_filter !== null ) {
+			if ( empty( $ids_filter ) ) {
+				return array();
+			}
+			$placeholders = implode( ',', array_fill( 0, count( $ids_filter ), '%d' ) );
+			$clubs_rows   = $this->wpdb->get_results(
+				$this->wpdb->prepare(
+					"SELECT p.ID AS club_id, p.post_title AS nombre
+					 FROM {$this->wpdb->posts} p
+					 WHERE p.post_type   = 'club'
+					   AND p.post_status = 'publish'
+					   AND p.ID IN ({$placeholders})
+					 ORDER BY p.post_title ASC",
+					...$ids_filter
+				)
+			);
 		} else {
 			$clubs_rows = $this->wpdb->get_results(
 				"SELECT p.ID AS club_id, p.post_title AS nombre

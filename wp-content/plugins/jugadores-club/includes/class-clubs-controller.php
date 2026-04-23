@@ -6,11 +6,14 @@
  *
  *   GET /wp-json/jugadores-club/v1/clubs
  *     Lista paginada de clubs con estadísticas de fotos.
- *     Parámetros: page (int, default 1), per_page (int, default 10, máx. 100).
+ *     Parámetros: page (int, default 1), per_page (int, default 10, máx. 100),
+ *                 user_id (int, opcional) → si el usuario es gestor, restringe a sus clubs;
+ *                                           si es administrador, devuelve todos.
  *
  *   GET /wp-json/jugadores-club/v1/album
  *   GET /wp-json/jugadores-club/v1/album?club_id=X
- *     Datos completos de todos los clubs (o de uno específico):
+ *   GET /wp-json/jugadores-club/v1/album?user_id=X
+ *     Datos completos de todos los clubs (o de uno específico / filtrado por usuario):
  *     categorías, jugadores y fotos de equipo anidados.
  *
  *   GET /wp-json/jugadores-club/v1/backup
@@ -47,6 +50,14 @@ class Clubs_Controller extends WP_REST_Controller {
 	 * Registra las rutas REST del controlador.
 	 */
 	public function register_routes(): void {
+		$user_id_param = array(
+			'description'       => __( 'ID de usuario WordPress. Si es gestor, filtra a sus clubs; si es administrador, devuelve todos.', 'jugadores-club' ),
+			'type'              => 'integer',
+			'minimum'           => 1,
+			'sanitize_callback' => 'absint',
+			'validate_callback' => 'rest_validate_request_arg',
+		);
+
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base,
@@ -55,7 +66,10 @@ class Clubs_Controller extends WP_REST_Controller {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_items' ),
 					'permission_callback' => array( $this, 'check_api_key' ),
-					'args'                => $this->get_collection_params(),
+					'args'                => array_merge(
+						$this->get_collection_params(),
+						array( 'user_id' => $user_id_param )
+					),
 				),
 			)
 		);
@@ -76,6 +90,7 @@ class Clubs_Controller extends WP_REST_Controller {
 							'sanitize_callback' => 'absint',
 							'validate_callback' => 'rest_validate_request_arg',
 						),
+						'user_id' => $user_id_param,
 					),
 				),
 			)
@@ -125,12 +140,13 @@ class Clubs_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_items( $request ) {
-		$page     = (int) $request->get_param( 'page' );
-		$per_page = (int) $request->get_param( 'per_page' );
+		$page      = (int) $request->get_param( 'page' );
+		$per_page  = (int) $request->get_param( 'per_page' );
+		$only_ids  = $this->resolve_club_ids( $request );
 
 		$repo        = new Clubs_Repository();
-		$total       = $repo->get_total();
-		$total_pages = (int) ceil( $total / $per_page );
+		$total       = $repo->get_total( null, $only_ids );
+		$total_pages = $total > 0 ? (int) ceil( $total / $per_page ) : 1;
 
 		if ( $total > 0 && $page > $total_pages ) {
 			return new WP_Error(
@@ -140,7 +156,7 @@ class Clubs_Controller extends WP_REST_Controller {
 			);
 		}
 
-		$clubs = $repo->get_clubs( $page, $per_page );
+		$clubs = $repo->get_clubs( $page, $per_page, null, $only_ids );
 
 		$response = rest_ensure_response( $clubs );
 		$response->header( 'X-WP-Total',      (string) $total );
@@ -156,14 +172,54 @@ class Clubs_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_album( WP_REST_Request $request ): WP_REST_Response {
-		$club_id = $request->get_param( 'club_id' )
+		$club_id  = $request->get_param( 'club_id' )
 			? (int) $request->get_param( 'club_id' )
 			: null;
+		$only_ids = $this->resolve_club_ids( $request );
 
 		$repo = new Clubs_Repository();
-		$data = $repo->get_album( $club_id );
+		$data = $repo->get_album( $club_id, $only_ids );
 
 		return rest_ensure_response( $data );
+	}
+
+	/**
+	 * Resuelve el parámetro user_id en una lista de IDs de clubs permitidos (o null).
+	 *
+	 * - Sin user_id → null (sin restricción, devuelve todos).
+	 * - Administrador → null (sin restricción).
+	 * - Gestor → array de IDs de clubs asignados (puede estar vacío).
+	 * - Cualquier otro rol o usuario inexistente → [] (respuesta vacía).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return int[]|null  null = sin filtro | array = filtro por IDs.
+	 */
+	private function resolve_club_ids( WP_REST_Request $request ): ?array {
+		$user_id = $request->get_param( 'user_id' )
+			? (int) $request->get_param( 'user_id' )
+			: null;
+
+		if ( $user_id === null ) {
+			return null;
+		}
+
+		$user = get_user_by( 'id', $user_id );
+
+		if ( ! $user ) {
+			return array();
+		}
+
+		$roles = (array) $user->roles;
+
+		if ( in_array( 'administrator', $roles, true ) ) {
+			return null;
+		}
+
+		if ( in_array( 'gestor', $roles, true ) ) {
+			return jc_get_gestor_clubs( $user_id );
+		}
+
+		return array();
 	}
 
 	/**

@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'JC_VERSION', '1.0.88' );
+define( 'JC_VERSION', '1.0.92' );
 define( 'JC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'JC_URI', plugin_dir_url( __FILE__ ) );
 
@@ -120,6 +120,27 @@ add_action( 'init', 'jc_register_roles' );
 function jc_deactivate() {
 	remove_role( 'club' );
 	remove_role( 'gestor' );
+}
+
+/**
+ * Obtiene los IDs de clubs asignados a un gestor.
+ *
+ * @param int $user_id ID del usuario gestor.
+ * @return int[]
+ */
+function jc_get_gestor_clubs( int $user_id ): array {
+	$val = get_user_meta( $user_id, 'jc_clubs_gestionados', true );
+	return is_array( $val ) ? array_map( 'absint', $val ) : array();
+}
+
+/**
+ * Guarda los IDs de clubs asignados a un gestor.
+ *
+ * @param int   $user_id  ID del usuario gestor.
+ * @param int[] $club_ids IDs de los posts de club.
+ */
+function jc_set_gestor_clubs( int $user_id, array $club_ids ): void {
+	update_user_meta( $user_id, 'jc_clubs_gestionados', array_values( array_map( 'absint', array_filter( $club_ids ) ) ) );
 }
 
 // Inicializar el plugin.
