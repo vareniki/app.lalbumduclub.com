@@ -1,9 +1,9 @@
 <?php
 /**
- * Integración del rol Gestor con el panel de WordPress.
+ * Integración de los roles Gestor y Súpergestor con el panel de WordPress.
  *
- * Permite a los gestores administrar únicamente los usuarios con rol Club
- * desde wp-admin > Usuarios, sin poder ver ni tocar otros usuarios.
+ * - Gestor:      administra usuarios Club y sus clubs asignados.
+ * - Súpergestor: administra todos los clubs, y puede crear/editar usuarios Gestor.
  *
  * @package JugadoresClub
  */
@@ -33,9 +33,10 @@ class Gestor_Admin {
 		add_action( 'personal_options_update', array( __CLASS__, 'save_user_clubs_panel' ) );
 		add_action( 'edit_user_profile_update', array( __CLASS__, 'save_user_clubs_panel' ) );
 
-		// Meta box de gestores al editar un post de tipo 'club'.
+		// Meta boxes al editar un post de tipo 'club'.
 		add_action( 'add_meta_boxes', array( __CLASS__, 'add_gestores_meta_box' ) );
 		add_action( 'save_post_club', array( __CLASS__, 'save_club_gestores' ), 10, 1 );
+		add_action( 'save_post_club', array( __CLASS__, 'save_club_users_meta' ), 10, 1 );
 	}
 
 	/**
@@ -49,36 +50,70 @@ class Gestor_Admin {
 	}
 
 	/**
-	 * Filtra la consulta de usuarios en el admin para mostrar solo los de rol Club.
+	 * Comprueba si el usuario actual tiene el rol Súpergestor.
 	 */
-	public static function filter_users_list( WP_User_Query $query ): void {
-		if ( ! is_admin() || ! self::is_gestor() ) {
-			return;
+	private static function is_supergestor(): bool {
+		if ( ! is_user_logged_in() ) {
+			return false;
 		}
-		$query->set( 'role', 'club' );
+		return in_array( 'supergestor', (array) wp_get_current_user()->roles, true );
 	}
 
 	/**
-	 * Restringe los roles asignables a solo 'club' para el Gestor.
-	 * Esto impide que puedan crear o promover usuarios a cualquier otro rol.
+	 * Filtra la consulta de usuarios en el admin según el rol del usuario actual.
+	 *
+	 * - Gestor:      solo ve usuarios con rol Club.
+	 * - Súpergestor: ve usuarios con rol Club y Gestor.
+	 */
+	public static function filter_users_list( WP_User_Query $query ): void {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		if ( self::is_supergestor() ) {
+			$query->set( 'role__in', array( 'club', 'gestor' ) );
+			return;
+		}
+
+		if ( self::is_gestor() ) {
+			$query->set( 'role', 'club' );
+		}
+	}
+
+	/**
+	 * Restringe los roles asignables según el rol del usuario actual.
+	 *
+	 * - Gestor:      solo puede asignar el rol Club.
+	 * - Súpergestor: puede asignar Club y Gestor.
 	 *
 	 * @param array $roles Roles disponibles en WordPress.
 	 * @return array
 	 */
 	public static function filter_editable_roles( array $roles ): array {
-		if ( ! self::is_gestor() ) {
-			return $roles;
+		if ( self::is_supergestor() ) {
+			return array_filter( $roles, static function ( $key ) {
+				return in_array( $key, array( 'club', 'gestor' ), true );
+			}, ARRAY_FILTER_USE_KEY );
 		}
-		return isset( $roles['club'] ) ? array( 'club' => $roles['club'] ) : array();
+
+		if ( self::is_gestor() ) {
+			return isset( $roles['club'] ) ? array( 'club' => $roles['club'] ) : array();
+		}
+
+		return $roles;
 	}
 
 	/**
-	 * Impide que el Gestor edite o elimine usuarios que no tengan rol Club.
+	 * Restringe las capabilities de edición/eliminación de usuarios según el rol.
 	 *
-	 * @param string[] $caps     Capabilities requeridas.
-	 * @param string   $cap      Capability que se está comprobando.
-	 * @param int      $user_id  ID del usuario que intenta la acción.
-	 * @param array    $args     Argumentos (args[0] = ID del usuario objetivo).
+	 * - Gestor:      solo puede editar/eliminar usuarios Club.
+	 * - Súpergestor: puede editar/eliminar usuarios Club y Gestor,
+	 *                pero no administradores ni otros supergestores.
+	 *
+	 * @param string[] $caps    Capabilities requeridas.
+	 * @param string   $cap     Capability que se está comprobando.
+	 * @param int      $user_id ID del usuario que intenta la acción.
+	 * @param array    $args    Argumentos (args[0] = ID del usuario objetivo).
 	 * @return string[]
 	 */
 	public static function restrict_user_caps( array $caps, string $cap, int $user_id, array $args ): array {
@@ -87,54 +122,73 @@ class Gestor_Admin {
 		}
 
 		$current_user = get_user_by( 'id', $user_id );
-		if ( ! $current_user || ! in_array( 'gestor', (array) $current_user->roles, true ) ) {
+		if ( ! $current_user ) {
 			return $caps;
 		}
 
-		$target_id = (int) ( $args[0] ?? 0 );
+		$current_roles = (array) $current_user->roles;
+		$target_id     = (int) ( $args[0] ?? 0 );
 
-		// Un gestor nunca puede editarse a sí mismo desde la pantalla de usuarios.
 		if ( ! $target_id || $target_id === $user_id ) {
 			return $caps;
 		}
 
-		$target = get_user_by( 'id', $target_id );
-		if ( ! $target || ! in_array( 'club', (array) $target->roles, true ) ) {
-			$caps[] = 'do_not_allow';
+		$target        = get_user_by( 'id', $target_id );
+		$target_roles  = $target ? (array) $target->roles : array();
+
+		if ( in_array( 'supergestor', $current_roles, true ) ) {
+			$allowed_target_roles = array( 'club', 'gestor' );
+			$has_allowed_role     = ! empty( array_intersect( $target_roles, $allowed_target_roles ) );
+			if ( ! $target || ! $has_allowed_role ) {
+				$caps[] = 'do_not_allow';
+			}
+			return $caps;
+		}
+
+		if ( in_array( 'gestor', $current_roles, true ) ) {
+			if ( ! $target || ! in_array( 'club', $target_roles, true ) ) {
+				$caps[] = 'do_not_allow';
+			}
+			return $caps;
 		}
 
 		return $caps;
 	}
 
 	/**
-	 * Deja solo las pestañas "Todos" y "Club" en la pantalla de usuarios.
+	 * Filtra las pestañas de la pantalla de usuarios según el rol.
+	 *
+	 * - Gestor:      "Todos" y "Club".
+	 * - Súpergestor: "Todos", "Club" y "Gestor".
 	 *
 	 * @param array $views Pestañas de filtro disponibles.
 	 * @return array
 	 */
 	public static function filter_user_views( array $views ): array {
-		if ( ! self::is_gestor() ) {
-			return $views;
+		if ( self::is_supergestor() ) {
+			return array_filter( $views, static function ( $key ) {
+				return in_array( $key, array( 'all', 'club', 'gestor' ), true );
+			}, ARRAY_FILTER_USE_KEY );
 		}
 
-		$allowed = array();
-
-		if ( isset( $views['all'] ) ) {
-			$allowed['all'] = $views['all'];
+		if ( self::is_gestor() ) {
+			return array_filter( $views, static function ( $key ) {
+				return in_array( $key, array( 'all', 'club' ), true );
+			}, ARRAY_FILTER_USE_KEY );
 		}
 
-		if ( isset( $views['club'] ) ) {
-			$allowed['club'] = $views['club'];
-		}
-
-		return $allowed;
+		return $views;
 	}
 
-	// ─── Asignación de clubs a Gestores ────────────────────────────────────────
+	// ─── Asignación de clubs a usuarios ───────────────────────────────────────
 
 	/**
-	 * Renderiza el panel "Clubs asignados" en la pantalla de edición de un usuario Gestor.
+	 * Renderiza el panel de asignación de clubs en la pantalla de edición de usuario.
 	 * Solo visible para administradores.
+	 *
+	 * - Súpergestor: muestra aviso de acceso total.
+	 * - Gestor:      selector múltiple filtrable.
+	 * - Club:        selector simple de un único club.
 	 *
 	 * @param WP_User $user Usuario que se está editando.
 	 */
@@ -143,7 +197,33 @@ class Gestor_Admin {
 			return;
 		}
 
-		if ( ! in_array( 'gestor', (array) $user->roles, true ) ) {
+		$user_roles = (array) $user->roles;
+
+		// Súpergestor: acceso total por definición, sin selector.
+		if ( in_array( 'supergestor', $user_roles, true ) ) {
+			?>
+			<h2>Club asignado</h2>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row">Club</th>
+					<td>
+						<span style="display:inline-flex; align-items:center; gap:6px; background:#f0f6fc; border:1px solid #c3d7ee; color:#0a5299; padding:6px 12px; border-radius:4px; font-size:13px;">
+							Este usuario tiene acceso a <strong>todos los clubs</strong> por su rol de Súpergestor.
+						</span>
+					</td>
+				</tr>
+			</table>
+			<?php
+			return;
+		}
+
+		// Usuario Club: selector simple de un único club.
+		if ( in_array( 'club', $user_roles, true ) ) {
+			self::render_club_user_assignment( $user );
+			return;
+		}
+
+		if ( ! in_array( 'gestor', $user_roles, true ) ) {
 			return;
 		}
 
@@ -277,7 +357,53 @@ class Gestor_Admin {
 	}
 
 	/**
-	 * Guarda los clubs asignados al gestor desde la pantalla de edición de usuario.
+	 * Renderiza el selector de club único para un usuario con rol Club.
+	 *
+	 * @param WP_User $user Usuario que se está editando.
+	 */
+	private static function render_club_user_assignment( WP_User $user ): void {
+		$assigned_id = jc_get_club_user_club( $user->ID );
+
+		$clubs = get_posts( array(
+			'post_type'      => 'club',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		) );
+
+		wp_nonce_field( 'jc_club_user_save', 'jc_club_user_nonce' );
+		?>
+		<h2>Club asignado</h2>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="jc_club_id">Club</label></th>
+				<td>
+					<?php if ( empty( $clubs ) ) : ?>
+						<p class="description">No hay clubs publicados todavía.</p>
+					<?php else : ?>
+						<select id="jc_club_id" name="jc_club_id"
+						        style="min-width:240px; max-width:360px;">
+							<option value="">— Sin asignar —</option>
+							<?php foreach ( $clubs as $club ) : ?>
+								<option value="<?php echo esc_attr( $club->ID ); ?>"
+								        <?php selected( $assigned_id, $club->ID ); ?>>
+									<?php echo esc_html( $club->post_title ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+						<p class="description" style="margin-top:6px;">
+							Un usuario Club solo puede estar asociado a un único club.
+						</p>
+					<?php endif; ?>
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
+	/**
+	 * Guarda la asignación de club(s) desde la pantalla de edición de usuario.
 	 *
 	 * @param int $user_id ID del usuario que se está guardando.
 	 */
@@ -286,33 +412,56 @@ class Gestor_Admin {
 			return;
 		}
 
-		if ( ! isset( $_POST['jc_gestor_clubs_nonce'] ) ||
-		     ! wp_verify_nonce( $_POST['jc_gestor_clubs_nonce'], 'jc_gestor_clubs_save' ) ) {
+		$user       = get_user_by( 'id', $user_id );
+		$user_roles = $user ? (array) $user->roles : array();
+
+		if ( ! $user ) {
 			return;
 		}
 
-		$user = get_user_by( 'id', $user_id );
-		if ( ! $user || ! in_array( 'gestor', (array) $user->roles, true ) ) {
+		// Usuario Club: guarda un único club_id.
+		if ( in_array( 'club', $user_roles, true ) ) {
+			if ( ! isset( $_POST['jc_club_user_nonce'] ) ||
+			     ! wp_verify_nonce( $_POST['jc_club_user_nonce'], 'jc_club_user_save' ) ) {
+				return;
+			}
+			$club_id = isset( $_POST['jc_club_id'] ) ? absint( $_POST['jc_club_id'] ) : null;
+			jc_set_club_user_club( $user_id, $club_id ?: null );
 			return;
 		}
 
-		$club_ids = isset( $_POST['jc_clubs_gestionados'] )
-			? array_map( 'absint', (array) $_POST['jc_clubs_gestionados'] )
-			: array();
-
-		jc_set_gestor_clubs( $user_id, $club_ids );
+		// Gestor: guarda múltiples clubs asignados (no aplica a supergestores).
+		if ( in_array( 'gestor', $user_roles, true ) && ! in_array( 'supergestor', $user_roles, true ) ) {
+			if ( ! isset( $_POST['jc_gestor_clubs_nonce'] ) ||
+			     ! wp_verify_nonce( $_POST['jc_gestor_clubs_nonce'], 'jc_gestor_clubs_save' ) ) {
+				return;
+			}
+			$club_ids = isset( $_POST['jc_clubs_gestionados'] )
+				? array_map( 'absint', (array) $_POST['jc_clubs_gestionados'] )
+				: array();
+			jc_set_gestor_clubs( $user_id, $club_ids );
+		}
 	}
 
-	// ─── Meta box en el post de club ────────────────────────────────────────────
+	// ─── Meta boxes en el post de club ─────────────────────────────────────────
 
 	/**
-	 * Registra el meta box "Gestores asignados" en los posts de tipo 'club'.
+	 * Registra los meta boxes en los posts de tipo 'club'.
 	 */
 	public static function add_gestores_meta_box(): void {
 		add_meta_box(
 			'jc-gestores-club',
 			'Gestores asignados',
 			array( __CLASS__, 'render_gestores_meta_box' ),
+			'club',
+			'side',
+			'default'
+		);
+
+		add_meta_box(
+			'jc-club-users',
+			'Usuarios Club',
+			array( __CLASS__, 'render_club_users_meta_box' ),
 			'club',
 			'side',
 			'default'
@@ -403,6 +552,86 @@ class Gestor_Admin {
 					return $id !== $post_id;
 				} ) );
 				jc_set_gestor_clubs( $gestor->ID, $clubs );
+			}
+		}
+	}
+
+	/**
+	 * Renderiza el meta box "Usuarios Club" en el post de tipo 'club'.
+	 *
+	 * Muestra todos los usuarios con rol Club. Los marcados son los que tienen
+	 * este club asignado. Un usuario Club solo puede pertenecer a un club, por lo
+	 * que asignarlo aquí lo desvincula automáticamente de cualquier club anterior.
+	 *
+	 * @param WP_Post $post Post de tipo 'club' que se está editando.
+	 */
+	public static function render_club_users_meta_box( WP_Post $post ): void {
+		$club_id = $post->ID;
+
+		$club_users = get_users( array(
+			'role'    => 'club',
+			'orderby' => 'display_name',
+			'order'   => 'ASC',
+		) );
+
+		wp_nonce_field( 'jc_club_users_save', 'jc_club_users_nonce' );
+		?>
+		<p style="margin-top:0; color:#666; font-size:12px;">
+			Usuarios Club con acceso a este club:
+		</p>
+		<?php if ( empty( $club_users ) ) : ?>
+			<p style="color:#999; font-style:italic; font-size:12px;">No hay usuarios Club registrados.</p>
+		<?php else : ?>
+			<?php foreach ( $club_users as $u ) : ?>
+				<label style="display:block; margin-bottom:5px; font-size:13px;">
+					<input type="checkbox"
+					       name="jc_club_users[]"
+					       value="<?php echo esc_attr( $u->ID ); ?>"
+					       <?php checked( jc_get_club_user_club( $u->ID ), $club_id ); ?>>
+					<?php echo esc_html( $u->display_name ?: $u->user_login ); ?>
+				</label>
+			<?php endforeach; ?>
+			<p style="margin-top:8px; color:#999; font-size:11px;">
+				Asignar un usuario aquí lo desvincula de su club anterior.
+			</p>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Guarda los usuarios Club asignados al club cuando se guarda el post.
+	 *
+	 * - Los usuarios marcados quedan asignados a este club (sobrescribiendo el anterior).
+	 * - Los usuarios desmarcados que tenían ESTE club asignado quedan sin club.
+	 *
+	 * @param int $post_id ID del post de tipo 'club' que se está guardando.
+	 */
+	public static function save_club_users_meta( int $post_id ): void {
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		if ( ! isset( $_POST['jc_club_users_nonce'] ) ||
+		     ! wp_verify_nonce( $_POST['jc_club_users_nonce'], 'jc_club_users_save' ) ) {
+			return;
+		}
+
+		$selected_user_ids = isset( $_POST['jc_club_users'] )
+			? array_map( 'absint', (array) $_POST['jc_club_users'] )
+			: array();
+
+		$club_users = get_users( array( 'role' => 'club' ) );
+
+		foreach ( $club_users as $u ) {
+			if ( in_array( $u->ID, $selected_user_ids, true ) ) {
+				jc_set_club_user_club( $u->ID, $post_id );
+			} elseif ( jc_get_club_user_club( $u->ID ) === $post_id ) {
+				// Solo desvincula si actualmente estaba asignado a ESTE club.
+				jc_set_club_user_club( $u->ID, null );
 			}
 		}
 	}

@@ -211,12 +211,20 @@ class Clubs_Controller extends WP_REST_Controller {
 
 		$roles = (array) $user->roles;
 
-		if ( in_array( 'administrator', $roles, true ) ) {
+		// Admin y Súpergestor → sin filtro, acceso a todos los clubs.
+		if ( in_array( 'administrator', $roles, true ) || in_array( 'supergestor', $roles, true ) ) {
 			return null;
 		}
 
+		// Gestor → solo sus clubs asignados.
 		if ( in_array( 'gestor', $roles, true ) ) {
 			return jc_get_gestor_clubs( $user_id );
+		}
+
+		// Club → su único club asignado.
+		if ( in_array( 'club', $roles, true ) ) {
+			$club_id = jc_get_club_user_club( $user_id );
+			return $club_id ? array( $club_id ) : array();
 		}
 
 		return array();

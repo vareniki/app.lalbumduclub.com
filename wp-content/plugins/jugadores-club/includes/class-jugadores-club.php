@@ -546,6 +546,7 @@ class Jugadores_Club {
 		</div>
 		<?php endif; ?>
 
+		<?php if ( $can_bulk_add ) : ?>
 		<div class="tw:mt-6 tw:mb-6 tw:flex tw:justify-end tw:gap-3">
 			<a href="<?php echo esc_url( $download_url ); ?>"
 			   class="tw:inline-flex tw:items-center tw:gap-2 tw:bg-gray-700 tw:hover:bg-gray-800 tw:text-white tw:text-sm tw:font-medium tw:px-5 tw:py-2.5 tw:rounded-lg tw:transition-colors">
@@ -557,11 +558,12 @@ class Jugadores_Club {
 			<a href="<?php echo esc_url( $zip_url ); ?>"
 			   class="tw:inline-flex tw:items-center tw:gap-2 tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-5 tw:py-2.5 tw:rounded-lg tw:transition-colors">
 				<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
 				</svg>
 				Descarga Info y Fotos
 			</a>
 		</div>
+		<?php endif; ?>
 
 		<?php
 		return ob_get_clean();
@@ -623,8 +625,8 @@ class Jugadores_Club {
 	private static function user_can_access_club( int $club_id ): bool {
 		$user = wp_get_current_user();
 
-		// Admin → acceso total.
-		if ( current_user_can( 'manage_options' ) ) {
+		// Admin y Súpergestor → acceso total.
+		if ( current_user_can( 'manage_options' ) || in_array( 'supergestor', (array) $user->roles, true ) ) {
 			return true;
 		}
 
@@ -633,21 +635,9 @@ class Jugadores_Club {
 			return in_array( $club_id, jc_get_gestor_clubs( $user->ID ), true );
 		}
 
-		// Rol Club → solo su club (identificado por club_slug).
+		// Rol Club → solo el club que tenga asignado (uno único).
 		if ( in_array( 'club', (array) $user->roles, true ) ) {
-			$club_slug = get_field( 'club_slug', 'user_' . $user->ID );
-
-			if ( empty( $club_slug ) ) {
-				return false;
-			}
-
-			$post = get_post( $club_id );
-
-			if ( ! $post ) {
-				return false;
-			}
-
-			return str_ends_with( $post->post_name, $club_slug );
+			return jc_get_club_user_club( $user->ID ) === $club_id;
 		}
 
 		return false;
