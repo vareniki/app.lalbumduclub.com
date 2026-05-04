@@ -27,6 +27,9 @@ class Gestor_Admin {
 		// Limpia las pestañas de roles en la pantalla de usuarios.
 		add_filter( 'views_users', array( __CLASS__, 'filter_user_views' ) );
 
+		// Encola jQuery UI Autocomplete solo en páginas de edición de usuario.
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_user_edit_assets' ) );
+
 		// Panel de clubs asignados al editar un usuario Gestor.
 		add_action( 'show_user_profile', array( __CLASS__, 'render_user_clubs_panel' ) );
 		add_action( 'edit_user_profile', array( __CLASS__, 'render_user_clubs_panel' ) );
@@ -37,6 +40,18 @@ class Gestor_Admin {
 		add_action( 'add_meta_boxes', array( __CLASS__, 'add_gestores_meta_box' ) );
 		add_action( 'save_post_club', array( __CLASS__, 'save_club_gestores' ), 10, 1 );
 		add_action( 'save_post_club', array( __CLASS__, 'save_club_users_meta' ), 10, 1 );
+	}
+
+	/**
+	 * Encola jQuery UI Autocomplete en las páginas de edición de usuario.
+	 *
+	 * @param string $hook Nombre de la página actual del admin.
+	 */
+	public static function enqueue_user_edit_assets( string $hook ): void {
+		if ( ! in_array( $hook, array( 'user-edit.php', 'profile.php' ), true ) ) {
+			return;
+		}
+		wp_enqueue_script( 'jquery-ui-autocomplete' );
 	}
 
 	/**
@@ -358,6 +373,7 @@ class Gestor_Admin {
 
 	/**
 	 * Renderiza el selector de club único para un usuario con rol Club.
+	 * Usa jQuery UI Autocomplete para manejar listados grandes.
 	 *
 	 * @param WP_User $user Usuario que se está editando.
 	 */
@@ -372,29 +388,81 @@ class Gestor_Admin {
 			'order'          => 'ASC',
 		) );
 
+		$assigned_name = '';
+		foreach ( $clubs as $club ) {
+			if ( $club->ID === $assigned_id ) {
+				$assigned_name = $club->post_title;
+				break;
+			}
+		}
+
+		$clubs_data = array_map( static function ( WP_Post $c ): array {
+			return array( 'id' => $c->ID, 'label' => $c->post_title );
+		}, $clubs );
+
 		wp_nonce_field( 'jc_club_user_save', 'jc_club_user_nonce' );
 		?>
 		<h2>Club asignado</h2>
 		<table class="form-table" role="presentation">
 			<tr>
-				<th scope="row"><label for="jc_club_id">Club</label></th>
+				<th scope="row"><label for="jc-club-autocomplete">Club</label></th>
 				<td>
 					<?php if ( empty( $clubs ) ) : ?>
 						<p class="description">No hay clubs publicados todavía.</p>
 					<?php else : ?>
-						<select id="jc_club_id" name="jc_club_id"
-						        style="min-width:240px; max-width:360px;">
-							<option value="">— Sin asignar —</option>
-							<?php foreach ( $clubs as $club ) : ?>
-								<option value="<?php echo esc_attr( $club->ID ); ?>"
-								        <?php selected( $assigned_id, $club->ID ); ?>>
-									<?php echo esc_html( $club->post_title ); ?>
-								</option>
-							<?php endforeach; ?>
-						</select>
+						<div style="position:relative; display:inline-block; width:360px; max-width:100%;">
+							<input type="text"
+							       id="jc-club-autocomplete"
+							       value="<?php echo esc_attr( $assigned_name ); ?>"
+							       placeholder="Escribe para buscar un club…"
+							       autocomplete="off"
+							       style="width:100%; box-sizing:border-box;">
+							<input type="hidden" id="jc_club_id" name="jc_club_id"
+							       value="<?php echo esc_attr( $assigned_id ?? '' ); ?>">
+						</div>
 						<p class="description" style="margin-top:6px;">
-							Un usuario Club solo puede estar asociado a un único club.
+							Un usuario Club solo puede estar asociado a un único club.<?php if ( $assigned_name ) : ?>
+							Club actual: <strong><?php echo esc_html( $assigned_name ); ?></strong>.<?php endif; ?>
+							Deja el campo vacío para desasignar.
 						</p>
+						<style>
+						.ui-autocomplete{background:#fff;border:1px solid #8c8f94;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.15);max-height:240px;overflow-y:auto;overflow-x:hidden;padding:4px 0;z-index:999999;}
+						.ui-autocomplete .ui-menu-item-wrapper{padding:6px 12px;font-size:13px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+						.ui-autocomplete .ui-state-active,.ui-autocomplete .ui-state-focus{background:#2271b1;color:#fff;border:none;border-radius:0;margin:0;}
+						</style>
+						<script>
+						jQuery( function ( $ ) {
+							var clubs   = <?php echo wp_json_encode( $clubs_data ); ?>;
+							var $text   = $( '#jc-club-autocomplete' );
+							var $hidden = $( '#jc_club_id' );
+
+							$text.autocomplete( {
+								minLength: 0,
+								source: function ( req, res ) {
+									var term = req.term.toLowerCase();
+									var hits = term
+										? clubs.filter( function ( c ) { return c.label.toLowerCase().indexOf( term ) !== -1; } )
+										: clubs;
+									res( hits.slice( 0, 25 ) );
+								},
+								select: function ( e, ui ) {
+									$text.val( ui.item.label );
+									$hidden.val( ui.item.id );
+									return false;
+								},
+								change: function ( e, ui ) {
+									if ( ! ui.item ) {
+										$text.val( '' );
+										$hidden.val( '' );
+									}
+								},
+							} ).on( 'focus', function () {
+								if ( ! $text.val() ) {
+									$text.autocomplete( 'search', '' );
+								}
+							} );
+						} );
+						</script>
 					<?php endif; ?>
 				</td>
 			</tr>

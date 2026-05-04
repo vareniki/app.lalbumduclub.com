@@ -563,6 +563,8 @@ class Jugadores_Club {
 				Descarga Info y Fotos
 			</a>
 		</div>
+		<?php else: ?>
+			<div class="tw:mb-6">&nbsp;</div>
 		<?php endif; ?>
 
 		<?php
