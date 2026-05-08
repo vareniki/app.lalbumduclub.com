@@ -223,7 +223,7 @@ class Gestor_Admin {
 					<th scope="row">Club</th>
 					<td>
 						<span style="display:inline-flex; align-items:center; gap:6px; background:#f0f6fc; border:1px solid #c3d7ee; color:#0a5299; padding:6px 12px; border-radius:4px; font-size:13px;">
-							Este usuario tiene acceso a <strong>todos los clubs</strong> por su rol de Súpergestor.
+							Cet utilisateur a accès à <strong>tous les clubs</strong> grâce à son rôle de Supergestionnnaire.
 						</span>
 					</td>
 				</tr>
@@ -257,13 +257,13 @@ class Gestor_Admin {
 
 		wp_nonce_field( 'jc_gestor_clubs_save', 'jc_gestor_clubs_nonce' );
 		?>
-		<h2>Clubs que puede gestionar</h2>
+		<h2>Clubs à gérer</h2>
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row">Clubs asignados</th>
 				<td>
 					<?php if ( empty( $clubs ) ) : ?>
-						<p class="description">No hay clubs publicados todavía.</p>
+						<p class="description">Aucun club publié pour l'instant.</p>
 					<?php else : ?>
 						<div id="jc-clubs-picker" style="max-width:480px;">
 
@@ -271,15 +271,15 @@ class Gestor_Admin {
 							<div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
 								<input type="search"
 								       id="jc-clubs-search"
-								       placeholder="Buscar club…"
+								       placeholder="Rechercher un club..."
 								       autocomplete="off"
 								       style="flex:1; padding:5px 10px; border:1px solid #8c8f94; border-radius:4px; font-size:13px; line-height:1.5; box-shadow:inset 0 1px 2px rgba(0,0,0,.07);">
 								<button type="button" id="jc-clubs-all"
 								        class="button button-small"
-								        style="white-space:nowrap;">Todos</button>
+								        style="white-space:nowrap;">Tous</button>
 								<button type="button" id="jc-clubs-none"
 								        class="button button-small"
-								        style="white-space:nowrap;">Ninguno</button>
+								        style="white-space:nowrap;">Aucun</button>
 							</div>
 
 							<!-- Lista scrollable -->
@@ -300,7 +300,7 @@ class Gestor_Admin {
 									<?php endforeach; ?>
 									<p id="jc-clubs-empty"
 									   style="display:none; margin:8px 0; color:#999; font-style:italic; font-size:13px;">
-										Ningún club coincide con la búsqueda.
+										Aucun club ne correspond à la recherche.
 									</p>
 								</div>
 							</fieldset>
@@ -310,7 +310,7 @@ class Gestor_Admin {
 							   class="description"
 							   style="margin-top:6px;">
 								<span id="jc-clubs-selected-count"><?php echo esc_html( $total_assigned ); ?></span>
-								de <?php echo esc_html( $total_clubs ); ?> clubs seleccionados
+								sur <?php echo esc_html( $total_clubs ); ?> clubs sélectionnés
 							</p>
 						</div>
 
@@ -408,22 +408,22 @@ class Gestor_Admin {
 				<th scope="row"><label for="jc-club-autocomplete">Club</label></th>
 				<td>
 					<?php if ( empty( $clubs ) ) : ?>
-						<p class="description">No hay clubs publicados todavía.</p>
+						<p class="description">Aucun club publié pour l'instant.</p>
 					<?php else : ?>
 						<div style="position:relative; display:inline-block; width:360px; max-width:100%;">
 							<input type="text"
 							       id="jc-club-autocomplete"
 							       value="<?php echo esc_attr( $assigned_name ); ?>"
-							       placeholder="Escribe para buscar un club…"
+							       placeholder="Saisissez pour rechercher un club..."
 							       autocomplete="off"
 							       style="width:100%; box-sizing:border-box;">
 							<input type="hidden" id="jc_club_id" name="jc_club_id"
 							       value="<?php echo esc_attr( $assigned_id ?? '' ); ?>">
 						</div>
 						<p class="description" style="margin-top:6px;">
-							Un usuario Club solo puede estar asociado a un único club.<?php if ( $assigned_name ) : ?>
-							Club actual: <strong><?php echo esc_html( $assigned_name ); ?></strong>.<?php endif; ?>
-							Deja el campo vacío para desasignar.
+							Un utilisateur Club ne peut être associé qu'à un seul club.<?php if ( $assigned_name ) : ?>
+							Club actuel : <strong><?php echo esc_html( $assigned_name ); ?></strong>.<?php endif; ?>
+							Laissez le champ vide pour dissocier.
 						</p>
 						<style>
 						.ui-autocomplete{background:#fff;border:1px solid #8c8f94;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.15);max-height:240px;overflow-y:auto;overflow-x:hidden;padding:4px 0;z-index:999999;}
@@ -561,10 +561,10 @@ class Gestor_Admin {
 		wp_nonce_field( 'jc_club_gestores_save', 'jc_club_gestores_nonce' );
 		?>
 		<p style="margin-top:0; color:#666; font-size:12px;">
-			Gestores con acceso a este club:
+			Gestionnaires avec accès à ce club :
 		</p>
 		<?php if ( empty( $gestores ) ) : ?>
-			<p style="color:#999; font-style:italic; font-size:12px;">No hay gestores registrados.</p>
+			<p style="color:#999; font-style:italic; font-size:12px;">Aucun gestionnaire enregistré.</p>
 		<?php else : ?>
 			<?php foreach ( $gestores as $gestor ) : ?>
 				<label style="display:block; margin-bottom:5px; font-size:13px;">
@@ -645,10 +645,10 @@ class Gestor_Admin {
 		wp_nonce_field( 'jc_club_users_save', 'jc_club_users_nonce' );
 		?>
 		<p style="margin-top:0; color:#666; font-size:12px;">
-			Usuarios Club con acceso a este club:
+			Utilisateurs Club avec accès à ce club :
 		</p>
 		<?php if ( empty( $club_users ) ) : ?>
-			<p style="color:#999; font-style:italic; font-size:12px;">No hay usuarios Club registrados.</p>
+			<p style="color:#999; font-style:italic; font-size:12px;">Aucun utilisateur Club enregistré.</p>
 		<?php else : ?>
 			<?php foreach ( $club_users as $u ) : ?>
 				<label style="display:block; margin-bottom:5px; font-size:13px;">
@@ -660,7 +660,7 @@ class Gestor_Admin {
 				</label>
 			<?php endforeach; ?>
 			<p style="margin-top:8px; color:#999; font-size:11px;">
-				Asignar un usuario aquí lo desvincula de su club anterior.
+				Assigner un utilisateur ici le dissocie de son club précédent.
 			</p>
 		<?php endif; ?>
 		<?php

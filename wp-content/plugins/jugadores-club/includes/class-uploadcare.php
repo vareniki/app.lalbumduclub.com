@@ -20,7 +20,7 @@ class JC_Uploadcare {
 
 	private const UPLOAD_BASE = 'https://upload.uploadcare.com/';
 	private const REST_BASE   = 'https://api.uploadcare.com/';
-	private const CDN_BASE    = 'https://y9vl0yvu4z.ucarecd.net/';
+	private const CDN_BASE    = 'https://34akz14xb5.ucarecd.net/';
 
 	private string $public_key;
 	private string $secret_key;
@@ -64,7 +64,7 @@ class JC_Uploadcare {
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( empty( $body['token'] ) ) {
-			return new WP_Error( 'uploadcare_upload', 'No se obtuvo token de subida.', $body );
+			return new WP_Error( 'uploadcare_upload', 'Impossible d\'obtenir le jeton de téléchargement.', $body );
 		}
 
 		return $this->poll_upload_status( $body['token'] );

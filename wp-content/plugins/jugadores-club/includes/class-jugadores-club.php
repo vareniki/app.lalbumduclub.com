@@ -74,7 +74,7 @@ class Jugadores_Club {
 				return '';
 			}
 			return '<div class="tw:rounded-xl tw:border tw:border-red-200 tw:bg-red-50 tw:px-6 tw:py-10 tw:text-center">'
-				. '<p class="tw:text-red-600 tw:font-medium tw:text-sm">No tienes permiso para gestionar este club.</p>'
+				. '<p class="tw:text-red-600 tw:font-medium tw:text-sm">Vous n\'avez pas la permission de gérer ce club.</p>'
 				. '</div>';
 		}
 
@@ -113,18 +113,18 @@ class Jugadores_Club {
 			<div class="add-categoria-form tw:bg-white tw:rounded-xl tw:shadow-sm tw:border tw:border-gray-200 tw:px-6 tw:py-4 tw:flex tw:items-center tw:gap-3">
 				<input type="text"
 				       class="add-categoria__input tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
-				       placeholder="Nueva categoría (ej. Infantil A)">
+				       placeholder="Nouvelle catégorie (ex. Infantil A)">
 				<button type="button"
 				        class="btn-add-categoria tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors">
 					<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
 					</svg>
-					Añadir categoría
+					Ajouter une catégorie
 				</button>
 			</div>
 
 			<?php if ( ! $categorias ) : ?>
-				<p class="tw:text-sm tw:text-gray-400 tw:text-center tw:py-8">No hay categorías todavía. Añade la primera.</p>
+				<p class="tw:text-sm tw:text-gray-400 tw:text-center tw:py-8">Aucune catégorie pour l'instant. Ajoutez la première.</p>
 			<?php else : ?>
 			<?php foreach ( $categorias as $cat ) :
 				$categoria_id  = (int) $cat->id;
@@ -142,16 +142,16 @@ class Jugadores_Club {
 				$con_foto_j = count( array_filter( (array) $jugadores, fn( $j ) => ! empty( $j->nombre_foto ) ) );
 				if ( $num_jugadores === 0 ) {
 					$cat_dot       = 'tw:bg-gray-300';
-					$cat_dot_title = 'Sin jugadores';
+					$cat_dot_title = 'Aucun joueur';
 				} elseif ( $con_foto_j === 0 ) {
 					$cat_dot       = 'tw:bg-red-400';
-					$cat_dot_title = 'Ningún jugador tiene foto asignada';
+					$cat_dot_title = 'Aucun joueur n\'a de photo assignée';
 				} elseif ( $con_foto_j === $num_jugadores ) {
 					$cat_dot       = 'tw:bg-green-400';
-					$cat_dot_title = 'Todos los jugadores tienen foto asignada';
+					$cat_dot_title = 'Tous les joueurs ont une photo assignée';
 				} else {
 					$cat_dot       = 'tw:bg-amber-400';
-					$cat_dot_title = 'Algunos jugadores tienen foto asignada';
+					$cat_dot_title = 'Certains joueurs ont une photo assignée';
 				}
 
 				$equipos = $wpdb->get_results( $wpdb->prepare(
@@ -165,7 +165,7 @@ class Jugadores_Club {
 
 				<!-- Cabecera categoría -->
 				<div class="tw:bg-gray-50 tw:border-b tw:border-gray-200 tw:flex tw:items-center">
-					<span class="drag-handle-categoria tw:pl-4 tw:pr-1 tw:shrink-0 tw:text-gray-300 tw:hover:text-gray-500 tw:transition-colors tw:cursor-grab tw:active:cursor-grabbing" title="Arrastrar para reordenar">
+					<span class="drag-handle-categoria tw:pl-4 tw:pr-1 tw:shrink-0 tw:text-gray-300 tw:hover:text-gray-500 tw:transition-colors tw:cursor-grab tw:active:cursor-grabbing" title="Glisser pour réorganiser">
 						<svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
 							<path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
 						</svg>
@@ -174,7 +174,7 @@ class Jugadores_Club {
 					        class="btn-toggle-categoria tw:flex-1 tw:px-6 tw:py-4 tw:flex tw:items-center tw:justify-between tw:text-left tw:hover:bg-gray-100 tw:transition-colors">
 						<h2 class="tw:text-lg tw:font-semibold tw:text-gray-800"><?php echo $category_name; ?></h2>
 						<div class="tw:flex tw:items-center tw:gap-3">
-							<span class="club-jugadores-count tw:text-sm tw:text-gray-400"><?php echo $num_jugadores; ?> jugador<?php echo $num_jugadores !== 1 ? 'es' : ''; ?></span>
+							<span class="club-jugadores-count tw:text-sm tw:text-gray-400"><?php echo $num_jugadores; ?> joueur<?php echo $num_jugadores !== 1 ? 's' : ''; ?></span>
 							<span class="categoria-status-dot tw:w-2.5 tw:h-2.5 tw:rounded-full <?php echo $cat_dot; ?>"
 							      title="<?php echo esc_attr( $cat_dot_title ); ?>"></span>
 							<svg class="categoria-chevron tw:w-4 tw:h-4 tw:text-gray-400 tw:transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -185,21 +185,21 @@ class Jugadores_Club {
 					<div class="tw:flex tw:items-center tw:gap-1 tw:pr-4">
 						<button type="button"
 						        class="btn-rename-categoria tw:p-2 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors tw:rounded"
-						        title="Renombrar categoría">
+						        title="Renommer la catégorie">
 							<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
 							</svg>
 						</button>
 						<button type="button"
 						        class="btn-sort-alfabetico tw:p-2 tw:text-gray-300 tw:hover:text-blue-500 tw:transition-colors tw:rounded"
-						        title="Ordenar alfabéticamente">
+						        title="Trier par ordre alphabétique">
 							<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0-3.75-3.75M17.25 21 21 17.25"/>
 							</svg>
 						</button>
 						<button type="button"
 						        class="btn-delete-categoria tw:p-2 tw:transition-colors tw:rounded <?php echo $num_jugadores > 0 ? 'tw:text-gray-200 tw:cursor-not-allowed' : 'tw:text-gray-300 tw:hover:text-red-500'; ?>"
-						        title="<?php echo $num_jugadores > 0 ? 'No se puede eliminar: tiene jugadores' : 'Eliminar categoría'; ?>"
+						        title="<?php echo $num_jugadores > 0 ? 'Impossible de supprimer : contient des joueurs' : 'Supprimer la catégorie'; ?>"
 						        <?php echo $num_jugadores > 0 ? 'disabled' : ''; ?>>
 							<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -213,8 +213,8 @@ class Jugadores_Club {
 					<input type="text"
 					       class="rename-descripcion tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 					       value="<?php echo esc_attr( $cat->descripcion ); ?>">
-					<button type="button" class="btn-save-rename tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Guardar</button>
-					<button type="button" class="btn-cancel-rename tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Cancelar</button>
+					<button type="button" class="btn-save-rename tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Enregistrer</button>
+					<button type="button" class="btn-cancel-rename tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Annuler</button>
 				</div>
 
 				<!-- Cuerpo de la categoría (colapsable) -->
@@ -222,13 +222,13 @@ class Jugadores_Club {
 
 				<!-- Fotos de grupo -->
 				<div class="club-equipo-section tw:px-6 tw:pt-4 tw:pb-3 tw:border-b tw:border-gray-100">
-					<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide tw:mb-3">Fotos de grupo</h3>
+					<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide tw:mb-3">Photos d'équipe</h3>
 					<div class="club-equipo tw:grid tw:grid-cols-2 tw:sm:grid-cols-4 tw:gap-4"
 					     data-categoria-id="<?php echo esc_attr( $categoria_id ); ?>">
 						<?php foreach ( $equipos as $equipo ) : ?>
 						<div class="club-equipo-item" data-equipo-id="<?php echo esc_attr( $equipo->id ); ?>"
 					     data-nombre-foto="<?php echo esc_attr( $equipo->nombre_foto ?? '' ); ?>">
-							<div class="equipo-foto-trigger tw:aspect-video tw:rounded-lg tw:overflow-hidden tw:bg-gray-100 tw:cursor-pointer tw:ring-2 tw:ring-transparent tw:hover:ring-blue-400 tw:transition-all" title="Subir foto">
+							<div class="equipo-foto-trigger tw:aspect-video tw:rounded-lg tw:overflow-hidden tw:bg-gray-100 tw:cursor-pointer tw:ring-2 tw:ring-transparent tw:hover:ring-blue-400 tw:transition-all" title="Télécharger une photo">
 								<?php if ( $equipo->foto_url ) : ?>
 									<img class="tw:w-full tw:h-full tw:object-cover"
 									     src="<?php echo esc_url( $equipo->foto_url ) . '-/preview/1000x666/'; ?>"
@@ -246,11 +246,11 @@ class Jugadores_Club {
 							<button type="button"
 							        class="btn-clear-equipo-foto tw:mt-1 tw:inline-flex tw:items-center tw:gap-1 tw:text-xs tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors"
 							        data-equipo-id="<?php echo esc_attr( $equipo->id ); ?>"
-							        title="Quitar foto">
+							        title="Retirer la photo">
 								<svg class="tw:w-3 tw:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
 								</svg>
-								Quitar foto
+								Retirer la photo
 							</button>
 							<?php endif; ?>
 							<div class="tw:mt-1.5 tw:flex-col tw:items-start tw:justify-between tw:gap-1">
@@ -259,12 +259,12 @@ class Jugadores_Club {
 						<span class="equipo-nombre-foto-display tw:w-full tw:block tw:text-xs tw:text-gray-400"><?php echo esc_html( $equipo->nombre_foto ); ?></span>
 						<?php endif; ?>
 								<div class="tw:flex tw:items-center tw:shrink-0">
-									<button type="button" class="btn-edit-equipo tw:p-1 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Editar descripción">
+									<button type="button" class="btn-edit-equipo tw:p-1 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Modifier la description">
 										<svg class="tw:w-3.5 tw:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
 										</svg>
 									</button>
-									<button type="button" class="btn-delete-equipo tw:p-1 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-equipo-id="<?php echo esc_attr( $equipo->id ); ?>" title="Eliminar">
+									<button type="button" class="btn-delete-equipo tw:p-1 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-equipo-id="<?php echo esc_attr( $equipo->id ); ?>" title="Supprimer">
 										<svg class="tw:w-3.5 tw:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
 										</svg>
@@ -274,8 +274,8 @@ class Jugadores_Club {
 							<div class="equipo-edit-panel tw:hidden tw:mt-2">
 								<input type="text" class="edit-equipo-descripcion tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-2 tw:py-1 tw:text-xs tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="<?php echo esc_attr( $equipo->descripcion ); ?>">
 								<div class="tw:flex tw:gap-2 tw:mt-1.5">
-									<button type="button" class="btn-save-equipo-edit tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-xs tw:font-medium tw:px-3 tw:py-1 tw:rounded-lg tw:transition-colors">Guardar</button>
-									<button type="button" class="btn-cancel-equipo-edit tw:text-gray-400 tw:hover:text-gray-600 tw:text-xs tw:px-2 tw:py-1 tw:rounded-lg tw:transition-colors">Cancelar</button>
+									<button type="button" class="btn-save-equipo-edit tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-xs tw:font-medium tw:px-3 tw:py-1 tw:rounded-lg tw:transition-colors">Enregistrer</button>
+									<button type="button" class="btn-cancel-equipo-edit tw:text-gray-400 tw:hover:text-gray-600 tw:text-xs tw:px-2 tw:py-1 tw:rounded-lg tw:transition-colors">Annuler</button>
 								</div>
 							</div>
 						</div>
@@ -283,19 +283,19 @@ class Jugadores_Club {
 					</div>
 					<!-- Formulario añadir foto de grupo -->
 					<div class="equipo-add-form tw:mt-3 tw:flex tw:items-center tw:gap-3">
-						<input type="text" class="equipo-add__descripcion tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Descripción (ej. Foto oficial temporada)" value="Foto de Grupo">
+						<input type="text" class="equipo-add__descripcion tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Description (ex. Photo officielle saison)" value="Photo de Groupe">
 						<button type="button" class="btn-add-equipo tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors" data-categoria-id="<?php echo esc_attr( $categoria_id ); ?>">
 							<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
 							</svg>
-							Añadir foto
+							Ajouter une photo
 						</button>
 					</div>
 				</div>
 
 				<!-- Fotos de los miembros -->
 				<div class="tw:px-6 tw:pt-4 tw:pb-2">
-					<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide">Fotos de los miembros</h3>
+					<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide">Photos des membres</h3>
 				</div>
 
 				<!-- Lista de jugadores (sortable) -->
@@ -316,7 +316,7 @@ class Jugadores_Club {
 									</span>
 									<!-- Foto (clic para subir) -->
 									<div class="jugador-foto-trigger tw:shrink-0 tw:w-10 tw:h-10 tw:rounded-full tw:overflow-hidden tw:bg-gray-200 tw:cursor-pointer tw:ring-2 tw:ring-transparent tw:hover:ring-blue-400 tw:transition-all"
-									     title="Subir foto">
+									     title="Télécharger une photo">
 										<?php if ( $jugador->foto_url ) : ?>
 											<img class="tw:w-full tw:h-full tw:object-cover"
 											     src="<?php echo esc_url( $jugador->foto_url . '-/preview/100x66/' ); ?>"
@@ -340,7 +340,7 @@ class Jugadores_Club {
 									<!-- Toggle foto expandida -->
 									<button type="button"
 									        class="btn-toggle-foto tw:shrink-0 tw:text-gray-300 tw:hover:text-blue-500 tw:transition-colors <?php echo $jugador->foto_url ? '' : 'tw:hidden'; ?>"
-									        title="Ver foto">
+									        title="Voir la photo">
 										<svg class="tw:w-4 tw:h-4 tw:transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
 										</svg>
@@ -348,7 +348,7 @@ class Jugadores_Club {
 									<!-- Editar -->
 									<button type="button"
 									        class="btn-edit-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors"
-									        title="Editar jugador">
+									        title="Modifier le joueur">
 										<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
 										</svg>
@@ -356,7 +356,7 @@ class Jugadores_Club {
 									<!-- Mover a otra categoría -->
 									<button type="button"
 									        class="btn-move-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-indigo-500 tw:transition-colors"
-									        title="Mover a otra categoría">
+									        title="Déplacer vers une autre catégorie">
 										<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
 										</svg>
@@ -365,58 +365,58 @@ class Jugadores_Club {
 									<button type="button"
 									        class="btn-delete-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors"
 									        data-jugador-id="<?php echo esc_attr( $jugador->id ); ?>"
-									        title="Eliminar jugador">
+									        title="Supprimer le joueur">
 										<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
 										</svg>
 									</button>
 									<!-- Indicador de estado -->
 									<span class="jugador-status-dot tw:shrink-0 tw:w-2 tw:h-2 tw:rounded-full <?php echo ! empty( $jugador->nombre_foto ) ? 'tw:bg-green-400' : 'tw:bg-amber-400'; ?>"
-									      title="<?php echo ! empty( $jugador->nombre_foto ) ? 'Foto asignada' : 'Sin foto'; ?>"></span>
+									      title="<?php echo ! empty( $jugador->nombre_foto ) ? 'Photo assignée' : 'Sans photo'; ?>"></span>
 								</div>
 								<!-- Panel de edición -->
 								<div class="jugador-edit-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-4 tw:bg-gray-50">
 									<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-3 tw:gap-3">
 										<div>
-											<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre</label>
+											<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Prénom</label>
 											<input type="text" class="edit-nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 											       value="<?php echo esc_attr( $jugador->nombre ); ?>">
 										</div>
 										<div>
-											<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Apellidos</label>
+											<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nom</label>
 											<input type="text" class="edit-apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 											       value="<?php echo esc_attr( $jugador->apellidos ); ?>">
 										</div>
 										<div>
-											<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Cargo</label>
+											<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Poste</label>
 											<input type="text" class="edit-cargo tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 											       value="<?php echo esc_attr( $jugador->cargo ); ?>">
 										</div>
 									</div>
 									<div class="tw:mt-3">
-										<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre foto</label>
+										<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nom photo</label>
 										<input type="text" class="edit-nombre-foto tw:w-full tw:sm:w-64 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 										       maxlength="64"
 										       placeholder="ej. 9999.jpg"
 										       value="<?php echo esc_attr( $jugador->nombre_foto ?? '' ); ?>">
-										<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>
+										<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la photo arrive par d'autres moyens, indiquez ici son nom de fichier (max. 32 caractères).</p>
 									</div>
 									<div class="tw:flex tw:gap-2 tw:mt-3">
 										<button type="button" class="btn-save-edit tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">
-											Guardar
+											Enregistrer
 										</button>
 										<button type="button" class="btn-cancel-edit tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">
-											Cancelar
+											Annuler
 										</button>
 									</div>
 								</div>
 								<!-- Panel de movimiento/copia -->
 								<div class="jugador-move-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-3 tw:bg-gray-50 tw:flex tw:items-center tw:gap-3">
-									<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Categoría:</label>
+									<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Catégorie :</label>
 									<select class="move-categoria-select tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none tw:bg-white"></select>
-									<button type="button" class="btn-confirm-move tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Mover</button>
-									<button type="button" class="btn-confirm-copy tw:bg-teal-600 tw:hover:bg-teal-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Copiar</button>
-									<button type="button" class="btn-cancel-move tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Cancelar</button>
+									<button type="button" class="btn-confirm-move tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Déplacer</button>
+									<button type="button" class="btn-confirm-copy tw:bg-teal-600 tw:hover:bg-teal-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Copier</button>
+									<button type="button" class="btn-cancel-move tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Annuler</button>
 								</div>
 								<!-- Foto expandida -->
 								<div class="jugador-foto-expanded tw:hidden tw:px-6 tw:py-4">
@@ -426,11 +426,11 @@ class Jugadores_Club {
 										     alt="<?php echo esc_attr( $jugador->nombre ); ?>">
 										<button type="button"
 										        class="btn-unassign-foto tw:mt-2 tw:inline-flex tw:items-center tw:gap-1 tw:text-sm tw:text-red-400 tw:hover:text-red-600 tw:transition-colors"
-										        title="Quitar foto">
+										        title="Retirer la photo">
 											<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
 											</svg>
-											Quitar foto
+											Retirer la photo
 										</button>
 									<?php endif; ?>
 								</div>
@@ -441,29 +441,29 @@ class Jugadores_Club {
 
 				<!-- Separador añadir jugadores -->
 				<div class="tw:border-t-2 tw:border-gray-200 tw:px-6 tw:py-3 tw:bg-gray-50">
-					<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide">Añadir jugadores</h3>
+					<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide">Ajouter des joueurs</h3>
 				</div>
 				<!-- Single add -->
 				<div class="single-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4"
 				     data-categoria-id="<?php echo esc_attr( $categoria_id ); ?>">
 					<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-3 tw:gap-3">
 						<div>
-							<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre</label>
-							<input type="text" class="single-add__nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Nombre">
+							<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Prénom</label>
+							<input type="text" class="single-add__nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Prénom">
 						</div>
 						<div>
-							<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Apellidos</label>
-							<input type="text" class="single-add__apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Apellidos">
+							<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nom</label>
+							<input type="text" class="single-add__apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Nom">
 						</div>
 						<div>
-							<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Cargo</label>
-							<input type="text" class="single-add__cargo tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Cargo">
+							<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Poste</label>
+							<input type="text" class="single-add__cargo tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Poste">
 						</div>
 					</div>
 					<div class="tw:mt-3">
-						<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre foto</label>
-						<input type="text" class="single-add__nombre-foto tw:w-full tw:sm:w-64 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" maxlength="32" placeholder="ej. 9999.jpg">
-						<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>
+						<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nom photo</label>
+						<input type="text" class="single-add__nombre-foto tw:w-full tw:sm:w-64 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" maxlength="32" placeholder="ex. 9999.jpg">
+						<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la photo arrive par d'autres moyens, indiquez ici son nom de fichier (max. 32 caractères).</p>
 					</div>
 					<div class="tw:mt-3">
 						<button type="button"
@@ -471,7 +471,7 @@ class Jugadores_Club {
 							<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
 							</svg>
-							Añadir jugador
+							Ajouter un joueur
 						</button>
 					</div>
 				</div>
@@ -480,7 +480,7 @@ class Jugadores_Club {
 				<div class="bulk-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4">
 					<textarea class="bulk-add__input tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 tw:placeholder-gray-400 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none tw:resize-y"
 					          rows="2"
-					          placeholder="Un jugador por línea: nombre, apellidos, cargo"
+					          placeholder="Un joueur par ligne : prénom, nom, poste"
 					          data-categoria-id="<?php echo esc_attr( $categoria_id ); ?>"></textarea>
 					<button type="button"
 					        class="btn-bulk-add tw:mt-2 tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors"
@@ -488,7 +488,7 @@ class Jugadores_Club {
 						<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
 						</svg>
-						Añadir en bulk
+						Ajout en masse
 					</button>
 				</div>
 				<?php endif; ?>
@@ -529,7 +529,7 @@ class Jugadores_Club {
 						<path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 0 1 2-2h.93a2 2 0 0 0 1.664-.89l.812-1.22A2 2 0 0 1 10.07 4h3.86a2 2 0 0 1 1.664.89l.812 1.22A2 2 0 0 0 18.07 7H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
 						<path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
 					</svg>
-					<span class="tw:text-sm tw:font-medium tw:text-gray-700">Fotos del álbum</span>
+					<span class="tw:text-sm tw:font-medium tw:text-gray-700">Photos de l'album</span>
 				</div>
 				<span class="stats-porcentaje tw:text-2xl tw:font-bold <?php echo $pct_color; ?>"><?php echo $porcentaje; ?>%</span>
 			</div>
@@ -539,9 +539,9 @@ class Jugadores_Club {
 			</div>
 			<p class="stats-label tw:mt-2 tw:text-xs tw:text-gray-400">
 				<span class="stats-con-foto tw:font-medium tw:text-gray-500"><?php echo $con_foto; ?></span>
-				miembros de
+				membres sur
 				<span class="stats-total"><?php echo $total; ?></span>
-				tienen foto
+				ont une photo
 			</p>
 		</div>
 		<?php endif; ?>
@@ -553,14 +553,14 @@ class Jugadores_Club {
 				<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
 				</svg>
-				Descarga la información
+				Télécharger les informations
 			</a>
 			<a href="<?php echo esc_url( $zip_url ); ?>"
 			   class="tw:inline-flex tw:items-center tw:gap-2 tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-5 tw:py-2.5 tw:rounded-lg tw:transition-colors">
 				<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
 				</svg>
-				Descarga Info y Fotos
+				Télécharger infos et photos
 			</a>
 		</div>
 		<?php else: ?>
@@ -693,18 +693,18 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id    = absint( $_POST['club_id'] ?? 0 );
 		$categories = json_decode( stripslashes( $_POST['categories'] ?? '' ), true );
 
 		if ( ! $club_id || ! is_array( $categories ) ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -753,22 +753,22 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id    = absint( $_POST['club_id'] ?? 0 );
 		$jugador_id = absint( $_POST['jugador_id'] ?? 0 );
 
 		if ( ! $club_id || ! $jugador_id ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		if ( ! self::jugador_belongs_to_club( $jugador_id, $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -779,7 +779,7 @@ class Jugadores_Club {
 		);
 
 		if ( false === $deleted ) {
-			wp_send_json_error( 'Error al eliminar.' );
+			wp_send_json_error( 'Erreur lors de la suppression.' );
 		}
 
 		wp_send_json_success();
@@ -792,19 +792,19 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'edit_posts' ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$categoria_id = absint( $_POST['categoria_id'] ?? 0 );
 		$jugadores    = json_decode( stripslashes( $_POST['jugadores'] ?? '' ), true );
 
 		if ( ! $categoria_id || ! is_array( $jugadores ) || empty( $jugadores ) ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		$post_id = self::get_post_id_by_categoria( $categoria_id );
 		if ( ! $post_id || ! self::user_can_access_club( $post_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -857,7 +857,7 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id     = absint( $_POST['club_id'] ?? 0 );
@@ -867,15 +867,15 @@ class Jugadores_Club {
 		$nombre_foto = substr( $nombre_foto, 0, 64 );
 
 		if ( ! $club_id || ! $jugador_id || ! $foto_url ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		if ( ! self::jugador_belongs_to_club( $jugador_id, $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -896,7 +896,7 @@ class Jugadores_Club {
 		);
 
 		if ( false === $updated ) {
-			wp_send_json_error( 'Error al actualizar.' );
+			wp_send_json_error( 'Erreur lors de la mise à jour.' );
 		}
 
 		wp_send_json_success( array( 'foto_url' => $foto_url, 'nombre_foto' => $nombre_foto ) );
@@ -909,22 +909,22 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id    = absint( $_POST['club_id'] ?? 0 );
 		$jugador_id = absint( $_POST['jugador_id'] ?? 0 );
 
 		if ( ! $club_id || ! $jugador_id ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		if ( ! self::jugador_belongs_to_club( $jugador_id, $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -937,7 +937,7 @@ class Jugadores_Club {
 		);
 
 		if ( false === $updated ) {
-			wp_send_json_error( 'Error al actualizar.' );
+			wp_send_json_error( 'Erreur lors de la mise à jour.' );
 		}
 
 		wp_send_json_success();
@@ -950,7 +950,7 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id     = absint( $_POST['club_id'] ?? 0 );
@@ -962,15 +962,15 @@ class Jugadores_Club {
 		$nombre_foto = substr( $nombre_foto, 0, 32 );
 
 		if ( ! $club_id || ! $jugador_id || '' === $nombre ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		if ( ! self::jugador_belongs_to_club( $jugador_id, $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -988,7 +988,7 @@ class Jugadores_Club {
 		);
 
 		if ( false === $updated ) {
-			wp_send_json_error( 'Error al actualizar.' );
+			wp_send_json_error( 'Erreur lors de la mise à jour.' );
 		}
 
 		wp_send_json_success( array(
@@ -1006,7 +1006,7 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$categoria_id = absint( $_POST['categoria_id'] ?? 0 );
@@ -1017,12 +1017,12 @@ class Jugadores_Club {
 		$nombre_foto  = substr( $nombre_foto, 0, 32 );
 
 		if ( ! $categoria_id || '' === $nombre ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		$post_id = self::get_post_id_by_categoria( $categoria_id );
 		if ( ! $post_id || ! self::user_can_access_club( $post_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1044,7 +1044,7 @@ class Jugadores_Club {
 		), array( '%d', '%s', '%s', '%s', '%s', '%s', '%d' ) );
 
 		if ( ! $wpdb->insert_id ) {
-			wp_send_json_error( 'Error al insertar.' );
+			wp_send_json_error( 'Erreur lors de l\'insertion.' );
 		}
 
 		wp_send_json_success( array(
@@ -1064,17 +1064,17 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_die( 'Sin permisos.' );
+			wp_die( 'Accès refusé.' );
 		}
 
 		$club_id = absint( $_GET['club_id'] ?? 0 );
 
 		if ( ! $club_id ) {
-			wp_die( 'Datos inválidos.' );
+			wp_die( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_die( 'Sin permisos.' );
+			wp_die( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1088,7 +1088,7 @@ class Jugadores_Club {
 		) );
 
 		if ( ! $categorias ) {
-			wp_die( 'Sin categorías.' );
+			wp_die( 'Aucune catégorie.' );
 		}
 
 		$post     = get_post( $club_id );
@@ -1108,7 +1108,7 @@ class Jugadores_Club {
 			fputcsv( $output, array( $cat->descripcion ) );
 
 			// Fotos de grupo.
-			fputcsv( $output, array( 'Fotos de grupo' ) );
+			fputcsv( $output, array( 'Photos de groupe' ) );
 			fputcsv( $output, array( 'nombre_foto', 'foto_url', 'descripcion' ) );
 
 			$equipos = $wpdb->get_results( $wpdb->prepare(
@@ -1128,7 +1128,7 @@ class Jugadores_Club {
 			}
 
 			// Miembros.
-			fputcsv( $output, array( 'Miembros' ) );
+			fputcsv( $output, array( 'Membres' ) );
 			fputcsv( $output, array( 'nombre_foto', 'foto_url', 'nombre', 'apellidos', 'cargo' ) );
 
 			$jugadores = $wpdb->get_results( $wpdb->prepare(
@@ -1163,21 +1163,21 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_die( 'Sin permisos.' );
+			wp_die( 'Accès refusé.' );
 		}
 
 		$club_id = absint( $_GET['club_id'] ?? 0 );
 
 		if ( ! $club_id ) {
-			wp_die( 'Datos inválidos.' );
+			wp_die( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_die( 'Sin permisos.' );
+			wp_die( 'Accès refusé.' );
 		}
 
 		if ( ! class_exists( 'ZipArchive' ) ) {
-			wp_die( 'ZipArchive no está disponible en este servidor.' );
+			wp_die( 'ZipArchive n\'est pas disponible sur ce serveur.' );
 		}
 
 		set_time_limit( 300 );
@@ -1193,7 +1193,7 @@ class Jugadores_Club {
 		) );
 
 		if ( ! $categorias ) {
-			wp_die( 'Sin categorías.' );
+			wp_die( 'Aucune catégorie.' );
 		}
 
 		$post     = get_post( $club_id );
@@ -1205,7 +1205,7 @@ class Jugadores_Club {
 
 		$zip = new ZipArchive();
 		if ( true !== $zip->open( $tmp, ZipArchive::OVERWRITE ) ) {
-			wp_die( 'Error al crear el archivo ZIP.' );
+			wp_die( 'Erreur lors de la création de l\'archive ZIP.' );
 		}
 
 		// Generar contenido CSV.
@@ -1215,7 +1215,7 @@ class Jugadores_Club {
 		foreach ( $categorias as $cat ) {
 			fputcsv( $csv_stream, array( $cat->descripcion ) );
 
-			fputcsv( $csv_stream, array( 'Fotos de grupo' ) );
+			fputcsv( $csv_stream, array( 'Photos de groupe' ) );
 			fputcsv( $csv_stream, array( 'nombre_foto', 'foto_url', 'descripcion' ) );
 
 			$equipos = $wpdb->get_results( $wpdb->prepare(
@@ -1234,7 +1234,7 @@ class Jugadores_Club {
 				) );
 			}
 
-			fputcsv( $csv_stream, array( 'Miembros' ) );
+			fputcsv( $csv_stream, array( 'Membres' ) );
 			fputcsv( $csv_stream, array( 'nombre_foto', 'foto_url', 'nombre', 'apellidos', 'cargo' ) );
 
 			$jugadores = $wpdb->get_results( $wpdb->prepare(
@@ -1285,7 +1285,7 @@ class Jugadores_Club {
 				$filename = self::normalize_for_filename( $equipo->descripcion ) . '.' . strtolower( $ext );
 				$body     = self::download_file( $url );
 				if ( null !== $body ) {
-					$zip->addFromString( $cat_folder . '/Equipo/' . $filename, $body );
+					$zip->addFromString( $cat_folder . '/Equipe/' . $filename, $body );
 				}
 			}
 
@@ -1308,7 +1308,7 @@ class Jugadores_Club {
 				}
 				$body = self::download_file( $url );
 				if ( null !== $body ) {
-					$zip->addFromString( $cat_folder . '/Jugadores/' . $filename, $body );
+					$zip->addFromString( $cat_folder . '/Joueurs/' . $filename, $body );
 				}
 			}
 
@@ -1380,18 +1380,18 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id     = absint( $_POST['club_id'] ?? 0 );
 		$descripcion = sanitize_text_field( trim( $_POST['descripcion'] ?? '' ) );
 
 		if ( ! $club_id || '' === $descripcion ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1412,7 +1412,7 @@ class Jugadores_Club {
 		);
 
 		if ( ! $wpdb->insert_id ) {
-			wp_send_json_error( 'Error al insertar.' );
+			wp_send_json_error( 'Erreur lors de l\'insertion.' );
 		}
 
 		wp_send_json_success( array(
@@ -1428,18 +1428,18 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id      = absint( $_POST['club_id'] ?? 0 );
 		$categoria_id = absint( $_POST['categoria_id'] ?? 0 );
 
 		if ( ! $club_id || ! $categoria_id ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1453,7 +1453,7 @@ class Jugadores_Club {
 		) );
 
 		if ( $post_id !== $club_id ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		// No eliminar si tiene jugadores.
@@ -1463,13 +1463,13 @@ class Jugadores_Club {
 		) );
 
 		if ( $count > 0 ) {
-			wp_send_json_error( 'La categoría tiene jugadores y no puede eliminarse.' );
+			wp_send_json_error( 'La catégorie contient des joueurs et ne peut pas être supprimée.' );
 		}
 
 		$deleted = $wpdb->delete( $t_cat, array( 'id' => $categoria_id ), array( '%d' ) );
 
 		if ( false === $deleted ) {
-			wp_send_json_error( 'Error al eliminar.' );
+			wp_send_json_error( 'Erreur lors de la suppression.' );
 		}
 
 		wp_send_json_success();
@@ -1482,7 +1482,7 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id      = absint( $_POST['club_id'] ?? 0 );
@@ -1490,11 +1490,11 @@ class Jugadores_Club {
 		$descripcion  = sanitize_text_field( trim( $_POST['descripcion'] ?? '' ) );
 
 		if ( ! $club_id || ! $categoria_id || '' === $descripcion ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1507,7 +1507,7 @@ class Jugadores_Club {
 		) );
 
 		if ( $post_id !== $club_id ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$updated = $wpdb->update(
@@ -1519,7 +1519,7 @@ class Jugadores_Club {
 		);
 
 		if ( false === $updated ) {
-			wp_send_json_error( 'Error al actualizar.' );
+			wp_send_json_error( 'Erreur lors de la mise à jour.' );
 		}
 
 		wp_send_json_success( array( 'descripcion' => $descripcion ) );
@@ -1532,18 +1532,18 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id      = absint( $_POST['club_id'] ?? 0 );
 		$categoria_ids = json_decode( stripslashes( $_POST['categoria_ids'] ?? '' ), true );
 
 		if ( ! $club_id || ! is_array( $categoria_ids ) ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1584,7 +1584,7 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id      = absint( $_POST['club_id'] ?? 0 );
@@ -1592,15 +1592,15 @@ class Jugadores_Club {
 		$categoria_id = absint( $_POST['categoria_id'] ?? 0 );
 
 		if ( ! $club_id || ! $jugador_id || ! $categoria_id ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		if ( ! self::jugador_belongs_to_club( $jugador_id, $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1614,7 +1614,7 @@ class Jugadores_Club {
 		) );
 
 		if ( $cat_post_id !== $club_id ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		// Calcular menu_order en la categoría destino.
@@ -1635,7 +1635,7 @@ class Jugadores_Club {
 		);
 
 		if ( false === $updated ) {
-			wp_send_json_error( 'Error al mover.' );
+			wp_send_json_error( 'Erreur lors du déplacement.' );
 		}
 
 		wp_send_json_success();
@@ -1648,7 +1648,7 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id      = absint( $_POST['club_id'] ?? 0 );
@@ -1656,15 +1656,15 @@ class Jugadores_Club {
 		$categoria_id = absint( $_POST['categoria_id'] ?? 0 );
 
 		if ( ! $club_id || ! $jugador_id || ! $categoria_id ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		if ( ! self::jugador_belongs_to_club( $jugador_id, $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1678,7 +1678,7 @@ class Jugadores_Club {
 		) );
 
 		if ( $cat_post_id !== $club_id ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		// Obtener datos del jugador original.
@@ -1688,7 +1688,7 @@ class Jugadores_Club {
 		) );
 
 		if ( ! $original ) {
-			wp_send_json_error( 'Jugador no encontrado.' );
+			wp_send_json_error( 'Joueur introuvable.' );
 		}
 
 		$max_order = (int) $wpdb->get_var( $wpdb->prepare(
@@ -1711,7 +1711,7 @@ class Jugadores_Club {
 		);
 
 		if ( ! $wpdb->insert_id ) {
-			wp_send_json_error( 'Error al duplicar.' );
+			wp_send_json_error( 'Erreur lors de la duplication.' );
 		}
 
 		wp_send_json_success( array(
@@ -1732,18 +1732,18 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id      = absint( $_POST['club_id'] ?? 0 );
 		$categoria_id = absint( $_POST['categoria_id'] ?? 0 );
 
 		if ( ! $club_id || ! $categoria_id ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1757,7 +1757,7 @@ class Jugadores_Club {
 		) );
 
 		if ( $cat_post_id !== $club_id ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		// Obtener IDs ordenados alfabéticamente por apellidos, nombre.
@@ -1792,19 +1792,19 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$categoria_id = absint( $_POST['categoria_id'] ?? 0 );
 		$descripcion  = sanitize_text_field( trim( $_POST['descripcion'] ?? '' ) );
 
 		if ( ! $categoria_id || '' === $descripcion ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		$post_id = self::get_post_id_by_categoria( $categoria_id );
 		if ( ! $post_id || ! self::user_can_access_club( $post_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1818,7 +1818,7 @@ class Jugadores_Club {
 		), array( '%d', '%s', '%s', '%d' ) );
 
 		if ( ! $wpdb->insert_id ) {
-			wp_send_json_error( 'Error al insertar.' );
+			wp_send_json_error( 'Erreur lors de l\'insertion.' );
 		}
 
 		wp_send_json_success( array(
@@ -1835,22 +1835,22 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id   = absint( $_POST['club_id'] ?? 0 );
 		$equipo_id = absint( $_POST['equipo_id'] ?? 0 );
 
 		if ( ! $club_id || ! $equipo_id ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		if ( ! self::equipo_belongs_to_club( $equipo_id, $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1861,7 +1861,7 @@ class Jugadores_Club {
 		);
 
 		if ( false === $deleted ) {
-			wp_send_json_error( 'Error al eliminar.' );
+			wp_send_json_error( 'Erreur lors de la suppression.' );
 		}
 
 		wp_send_json_success();
@@ -1874,7 +1874,7 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id     = absint( $_POST['club_id'] ?? 0 );
@@ -1882,15 +1882,15 @@ class Jugadores_Club {
 		$descripcion = sanitize_text_field( trim( $_POST['descripcion'] ?? '' ) );
 
 		if ( ! $club_id || ! $equipo_id || '' === $descripcion ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		if ( ! self::equipo_belongs_to_club( $equipo_id, $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1903,7 +1903,7 @@ class Jugadores_Club {
 		);
 
 		if ( false === $updated ) {
-			wp_send_json_error( 'Error al actualizar.' );
+			wp_send_json_error( 'Erreur lors de la mise à jour.' );
 		}
 
 		wp_send_json_success( array( 'descripcion' => $descripcion ) );
@@ -1916,7 +1916,7 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id     = absint( $_POST['club_id'] ?? 0 );
@@ -1926,15 +1926,15 @@ class Jugadores_Club {
 		$nombre_foto = substr( $nombre_foto, 0, 64 );
 
 		if ( ! $club_id || ! $equipo_id || ! $foto_url ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		if ( ! self::equipo_belongs_to_club( $equipo_id, $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1955,7 +1955,7 @@ class Jugadores_Club {
 		);
 
 		if ( false === $updated ) {
-			wp_send_json_error( 'Error al actualizar.' );
+			wp_send_json_error( 'Erreur lors de la mise à jour.' );
 		}
 
 		wp_send_json_success( array( 'foto_url' => $foto_url, 'nombre_foto' => $nombre_foto ) );
@@ -1968,22 +1968,22 @@ class Jugadores_Club {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$club_id   = absint( $_POST['club_id'] ?? 0 );
 		$equipo_id = absint( $_POST['equipo_id'] ?? 0 );
 
 		if ( ! $club_id || ! $equipo_id ) {
-			wp_send_json_error( 'Datos inválidos.' );
+			wp_send_json_error( 'Données invalides.' );
 		}
 
 		if ( ! self::user_can_access_club( $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		if ( ! self::equipo_belongs_to_club( $equipo_id, $club_id ) ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		global $wpdb;
@@ -1996,7 +1996,7 @@ class Jugadores_Club {
 		);
 
 		if ( false === $updated ) {
-			wp_send_json_error( 'Error al actualizar.' );
+			wp_send_json_error( 'Erreur lors de la mise à jour.' );
 		}
 
 		wp_send_json_success();

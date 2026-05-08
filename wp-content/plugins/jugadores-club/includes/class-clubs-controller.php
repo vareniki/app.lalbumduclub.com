@@ -121,7 +121,7 @@ class Clubs_Controller extends WP_REST_Controller {
 		if ( ! $key || ! hash_equals( JC_API_KEY, $key ) ) {
 			return new WP_Error(
 				'rest_forbidden',
-				__( 'API key inválida o ausente.', 'jugadores-club' ),
+				__( 'Clé API invalide ou absente.', 'jugadores-club' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -151,7 +151,7 @@ class Clubs_Controller extends WP_REST_Controller {
 		if ( $total > 0 && $page > $total_pages ) {
 			return new WP_Error(
 				'rest_invalid_page_number',
-				__( 'El número de página solicitado supera el total de páginas disponibles.', 'jugadores-club' ),
+				__( 'Le numéro de page demandé dépasse le total des pages disponibles.', 'jugadores-club' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -267,7 +267,7 @@ class Clubs_Controller extends WP_REST_Controller {
 		global $wpdb;
 
 		if ( ! class_exists( 'ZipArchive' ) ) {
-			wp_send_json_error( array( 'message' => 'La extensión ZipArchive no está disponible en el servidor.' ), 500 );
+			wp_send_json_error( array( 'message' => 'L\'extension ZipArchive n\'est pas disponible sur le serveur.' ), 500 );
 		}
 
 		$tables = array(
@@ -280,7 +280,7 @@ class Clubs_Controller extends WP_REST_Controller {
 		$zip      = new ZipArchive();
 
 		if ( $zip->open( $tmp_file, ZipArchive::CREATE | ZipArchive::OVERWRITE ) !== true ) {
-			wp_send_json_error( array( 'message' => 'No se pudo crear el archivo ZIP temporal.' ), 500 );
+			wp_send_json_error( array( 'message' => 'Impossible de créer le fichier ZIP temporaire.' ), 500 );
 		}
 
 		foreach ( $tables as $table ) {

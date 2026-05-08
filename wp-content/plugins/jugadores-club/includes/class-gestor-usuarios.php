@@ -79,7 +79,7 @@ class Gestor_Usuarios {
 	 * Construye el HTML del select de clubs.
 	 */
 	private static function clubs_select_options( string $selected_slug, array $clubs ): string {
-		$html = '<option value="">— Sin asignar —</option>';
+		$html = '<option value="">— Non assigné —</option>';
 		foreach ( $clubs as $club ) {
 			$html .= sprintf(
 				'<option value="%s"%s>%s</option>',
@@ -124,13 +124,13 @@ class Gestor_Usuarios {
 
 			<!-- Cabecera -->
 			<div class="tw:flex tw:items-center tw:justify-between tw:bg-white tw:rounded-xl tw:shadow-sm tw:border tw:border-gray-200 tw:px-6 tw:py-4">
-				<h2 class="tw:text-lg tw:font-semibold tw:text-gray-800">Usuarios Club</h2>
+				<h2 class="tw:text-lg tw:font-semibold tw:text-gray-800">Utilisateurs Club</h2>
 				<button type="button" id="btn-nuevo-usuario"
 				        class="tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors">
 					<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
 					</svg>
-					Nuevo usuario
+					Nouvel utilisateur
 				</button>
 			</div>
 
@@ -138,14 +138,14 @@ class Gestor_Usuarios {
 			<div id="usuarios-lista" class="tw:bg-white tw:rounded-xl tw:shadow-sm tw:border tw:border-gray-200 tw:overflow-hidden">
 				<?php if ( empty( $users ) ) : ?>
 					<p id="usuarios-lista-empty" class="tw:px-6 tw:py-8 tw:text-center tw:text-gray-400 tw:text-sm">
-						No hay usuarios con rol Club todavía.
+						Aucun utilisateur avec le rôle Club pour l'instant.
 					</p>
 				<?php else : ?>
 					<!-- Cabecera tabla (solo escritorio) -->
 					<div class="tw:hidden tw:sm:grid tw:grid-cols-[1fr_1fr_1fr_auto] tw:gap-4 tw:px-6 tw:py-3 tw:bg-gray-50 tw:border-b tw:border-gray-200 tw:text-xs tw:font-medium tw:text-gray-500 tw:uppercase tw:tracking-wide">
-						<span>Nombre / Usuario</span>
+						<span>Nom / Identifiant</span>
 						<span>Email</span>
-						<span>Club asignado</span>
+						<span>Club assigné</span>
 						<span></span>
 					</div>
 					<?php foreach ( $users as $user ) :
@@ -178,11 +178,11 @@ class Gestor_Usuarios {
 								<?php elseif ( $club_slug ) : ?>
 									<span class="usuario-club tw:text-sm tw:text-gray-400"><?php echo esc_html( $club_slug ); ?></span>
 								<?php else : ?>
-									<span class="usuario-club tw:text-xs tw:text-gray-300">Sin asignar</span>
+									<span class="usuario-club tw:text-xs tw:text-gray-300">Non assigné</span>
 								<?php endif; ?>
 							</div>
 							<div class="tw:flex tw:items-center tw:gap-2">
-								<button type="button" class="btn-edit-usuario tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Editar usuario">
+								<button type="button" class="btn-edit-usuario tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Modifier l'utilisateur">
 									<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/>
 									</svg>
@@ -190,7 +190,7 @@ class Gestor_Usuarios {
 								<button type="button" class="btn-delete-usuario tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors"
 								        data-user-id="<?php echo esc_attr( $user->ID ); ?>"
 								        data-nombre="<?php echo esc_attr( $user->display_name ?: $user->user_login ); ?>"
-								        title="Eliminar usuario">
+								        title="Supprimer l'utilisateur">
 									<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
 									</svg>
@@ -202,7 +202,7 @@ class Gestor_Usuarios {
 						<div class="usuario-edit-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-4 tw:bg-gray-50">
 							<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-2 tw:gap-3">
 								<div>
-									<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre para mostrar</label>
+									<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nom d'affichage</label>
 									<input type="text" class="edit-display-name tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 									       value="<?php echo esc_attr( $user->display_name ); ?>">
 								</div>
@@ -213,14 +213,14 @@ class Gestor_Usuarios {
 								</div>
 								<div>
 									<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">
-										Nueva contraseña
-										<span class="tw:text-gray-400 tw:font-normal">(vacío = no cambiar)</span>
+										Nouveau mot de passe
+										<span class="tw:text-gray-400 tw:font-normal">(vide = ne pas changer)</span>
 									</label>
 									<input type="password" class="edit-password tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 									       placeholder="••••••••" autocomplete="new-password">
 								</div>
 								<div>
-									<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Club asignado</label>
+									<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Club assigné</label>
 									<select class="edit-club-slug tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none tw:bg-white">
 										<?php echo self::clubs_select_options( $club_slug, $clubs ); ?>
 									</select>
@@ -229,10 +229,10 @@ class Gestor_Usuarios {
 							<div class="usuario-edit-error tw:hidden tw:mt-2 tw:text-sm tw:text-red-600"></div>
 							<div class="tw:flex tw:gap-2 tw:mt-3">
 								<button type="button" class="btn-save-usuario tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">
-									Guardar
+									Enregistrer
 								</button>
 								<button type="button" class="btn-cancel-usuario tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">
-									Cancelar
+									Annuler
 								</button>
 							</div>
 						</div>
@@ -244,21 +244,21 @@ class Gestor_Usuarios {
 
 			<!-- Panel nuevo usuario -->
 			<div id="nuevo-usuario-panel" class="tw:hidden tw:bg-white tw:rounded-xl tw:shadow-sm tw:border tw:border-gray-200 tw:px-6 tw:py-5">
-				<h3 class="tw:text-base tw:font-semibold tw:text-gray-800 tw:mb-4">Nuevo usuario Club</h3>
+				<h3 class="tw:text-base tw:font-semibold tw:text-gray-800 tw:mb-4">Nouvel utilisateur Club</h3>
 				<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-2 tw:gap-3">
 					<div>
 						<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">
-							Usuario <span class="tw:text-red-400">*</span>
+							Identifiant <span class="tw:text-red-400">*</span>
 						</label>
 						<input type="text" id="new-username"
 						       class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
-						       placeholder="nombre.usuario" autocomplete="off">
+						       placeholder="prenom.nom" autocomplete="off">
 					</div>
 					<div>
-						<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre para mostrar</label>
+						<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nom d'affichage</label>
 						<input type="text" id="new-display-name"
 						       class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
-						       placeholder="Nombre completo">
+						       placeholder="Nom complet">
 					</div>
 					<div>
 						<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">
@@ -266,18 +266,18 @@ class Gestor_Usuarios {
 						</label>
 						<input type="email" id="new-email"
 						       class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
-						       placeholder="correo@ejemplo.com">
+						       placeholder="email@exemple.com">
 					</div>
 					<div>
 						<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">
-							Contraseña <span class="tw:text-red-400">*</span>
+							Mot de passe <span class="tw:text-red-400">*</span>
 						</label>
 						<input type="password" id="new-password"
 						       class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none"
 						       placeholder="••••••••" autocomplete="new-password">
 					</div>
 					<div class="tw:sm:col-span-2">
-						<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Club asignado</label>
+						<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Club assigné</label>
 						<select id="new-club-slug"
 						        class="tw:w-full tw:sm:w-72 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none tw:bg-white">
 							<?php echo self::clubs_select_options( '', $clubs ); ?>
@@ -288,11 +288,11 @@ class Gestor_Usuarios {
 				<div class="tw:flex tw:gap-2 tw:mt-4">
 					<button type="button" id="btn-crear-usuario"
 					        class="tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors">
-						Crear usuario
+						Créer l'utilisateur
 					</button>
 					<button type="button" id="btn-cancel-nuevo"
 					        class="tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-2 tw:rounded-lg tw:transition-colors">
-						Cancelar
+						Annuler
 					</button>
 				</div>
 			</div>
@@ -352,7 +352,7 @@ class Gestor_Usuarios {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! self::can_manage() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$username     = sanitize_user( trim( $_POST['username'] ?? '' ) );
@@ -362,19 +362,19 @@ class Gestor_Usuarios {
 		$club_slug    = sanitize_text_field( trim( $_POST['club_slug'] ?? '' ) );
 
 		if ( ! $username || ! $email || ! $password ) {
-			wp_send_json_error( 'Usuario, email y contraseña son obligatorios.' );
+			wp_send_json_error( 'L\'identifiant, l\'email et le mot de passe sont obligatoires.' );
 		}
 
 		if ( ! is_email( $email ) ) {
-			wp_send_json_error( 'El email no es válido.' );
+			wp_send_json_error( 'L\'adresse e-mail n\'est pas valide.' );
 		}
 
 		if ( username_exists( $username ) ) {
-			wp_send_json_error( 'El nombre de usuario ya existe.' );
+			wp_send_json_error( 'Cet identifiant existe déjà.' );
 		}
 
 		if ( email_exists( $email ) ) {
-			wp_send_json_error( 'El email ya está registrado.' );
+			wp_send_json_error( 'Cette adresse e-mail est déjà enregistrée.' );
 		}
 
 		$user_id = wp_insert_user( array(
@@ -409,7 +409,7 @@ class Gestor_Usuarios {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! self::can_manage() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$user_id      = absint( $_POST['user_id'] ?? 0 );
@@ -419,21 +419,21 @@ class Gestor_Usuarios {
 		$club_slug    = sanitize_text_field( trim( $_POST['club_slug'] ?? '' ) );
 
 		if ( ! $user_id ) {
-			wp_send_json_error( 'ID de usuario inválido.' );
+			wp_send_json_error( 'ID utilisateur invalide.' );
 		}
 
 		// Solo permite modificar usuarios con rol 'club'.
 		$user = get_user_by( 'id', $user_id );
 		if ( ! $user || ! in_array( 'club', (array) $user->roles, true ) ) {
-			wp_send_json_error( 'Usuario no encontrado o sin rol Club.' );
+			wp_send_json_error( 'Utilisateur introuvable ou sans rôle Club.' );
 		}
 
 		if ( $email && ! is_email( $email ) ) {
-			wp_send_json_error( 'El email no es válido.' );
+			wp_send_json_error( 'L\'adresse e-mail n\'est pas valide.' );
 		}
 
 		if ( $email && $email !== $user->user_email && email_exists( $email ) ) {
-			wp_send_json_error( 'El email ya está registrado por otro usuario.' );
+			wp_send_json_error( 'Cette adresse e-mail est déjà utilisée par un autre utilisateur.' );
 		}
 
 		$userdata = array( 'ID' => $user_id );
@@ -470,26 +470,26 @@ class Gestor_Usuarios {
 		check_ajax_referer( 'album_club_nonce', 'nonce' );
 
 		if ( ! self::can_manage() ) {
-			wp_send_json_error( 'Sin permisos.' );
+			wp_send_json_error( 'Accès refusé.' );
 		}
 
 		$user_id = absint( $_POST['user_id'] ?? 0 );
 
 		if ( ! $user_id ) {
-			wp_send_json_error( 'ID de usuario inválido.' );
+			wp_send_json_error( 'ID utilisateur invalide.' );
 		}
 
 		// Solo permite eliminar usuarios con rol 'club'.
 		$user = get_user_by( 'id', $user_id );
 		if ( ! $user || ! in_array( 'club', (array) $user->roles, true ) ) {
-			wp_send_json_error( 'Usuario no encontrado o sin rol Club.' );
+			wp_send_json_error( 'Utilisateur introuvable ou sans rôle Club.' );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/user.php';
 		$deleted = wp_delete_user( $user_id );
 
 		if ( ! $deleted ) {
-			wp_send_json_error( 'Error al eliminar el usuario.' );
+			wp_send_json_error( 'Erreur lors de la suppression de l\'utilisateur.' );
 		}
 
 		wp_send_json_success();

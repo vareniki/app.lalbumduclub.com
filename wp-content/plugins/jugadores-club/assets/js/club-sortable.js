@@ -34,10 +34,10 @@
 	var activeJugadorEl = null;
 	var activeEquipoEl  = null;
 
-	var UNASSIGN_BTN_HTML = '<button type="button" class="btn-unassign-foto tw:mt-2 tw:inline-flex tw:items-center tw:gap-1 tw:text-sm tw:text-red-400 tw:hover:text-red-600 tw:transition-colors" title="Quitar foto">'
+	var UNASSIGN_BTN_HTML = '<button type="button" class="btn-unassign-foto tw:mt-2 tw:inline-flex tw:items-center tw:gap-1 tw:text-sm tw:text-red-400 tw:hover:text-red-600 tw:transition-colors" title="Retirer la photo">'
 		+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">'
 		+ '<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>'
-		+ '</svg>Quitar foto</button>';
+		+ '</svg>Retirer la photo</button>';
 
 	var CAMERA_PLACEHOLDER_HTML = '<div class="tw:w-full tw:h-full tw:flex tw:items-center tw:justify-center tw:text-gray-300">'
 		+ '<svg class="tw:w-8 tw:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">'
@@ -177,7 +177,7 @@
 		if ( target ) {
 			e.preventDefault();
 			e.stopPropagation();
-			if ( ! window.confirm( '¿Ordenar los jugadores de esta categoría por apellidos y nombre? El orden actual se perderá.' ) ) return;
+			if ( ! window.confirm( 'Trier les joueurs de cette catégorie par nom et prénom ? L\'ordre actuel sera perdu.' ) ) return;
 			handleSortAlfabetico( target );
 			return;
 		}
@@ -246,7 +246,7 @@
 			var jugadorId = target.dataset.jugadorId;
 			var row       = target.closest( '.club-jugador' );
 			var list      = target.closest( '.club-jugadores' );
-			if ( ! confirm( '¿Eliminar este jugador?' ) ) return;
+			if ( ! confirm( 'Supprimer ce joueur ?' ) ) return;
 			var hadFoto = !! row.querySelector( '.jugador-foto-trigger img' ) || !! row.dataset.nombreFoto;
 			ajax( 'album_delete_jugador', {
 				club_id:    clubId,
@@ -505,7 +505,7 @@
 			trigger.classList.remove( 'tw:opacity-50', 'tw:pointer-events-none' );
 
 			if ( ! cdnUrl ) {
-				alert( 'Error al subir la imagen.' );
+				alert( 'Erreur lors du téléchargement de l\'image.' );
 				return;
 			}
 
@@ -571,7 +571,7 @@
 			trigger.classList.remove( 'tw:opacity-50', 'tw:pointer-events-none' );
 
 			if ( ! cdnUrl ) {
-				alert( 'Error al subir la imagen.' );
+				alert( 'Erreur lors du téléchargement de l\'image.' );
 				return;
 			}
 
@@ -581,9 +581,9 @@
 			var clearBtn = equipoEl.querySelector( '.btn-clear-equipo-foto' );
 			if ( ! clearBtn ) {
 				trigger.insertAdjacentHTML( 'afterend',
-					'<button type="button" class="btn-clear-equipo-foto tw:mt-1 tw:inline-flex tw:items-center tw:gap-1 tw:text-xs tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-equipo-id="' + equipoId + '" title="Quitar foto">'
+					'<button type="button" class="btn-clear-equipo-foto tw:mt-1 tw:inline-flex tw:items-center tw:gap-1 tw:text-xs tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-equipo-id="' + equipoId + '" title="Retirer la photo">'
 					+ '<svg class="tw:w-3 tw:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>'
-					+ 'Quitar foto</button>'
+					+ 'Retirer la photo</button>'
 				);
 			}
 
@@ -621,7 +621,7 @@
 		.then( function ( res ) { return res.json(); } )
 		.then( function ( res ) {
 			if ( res.file ) {
-				callback( 'https://y9vl0yvu4z.ucarecd.net/' + res.file + '/' );
+				callback( 'https://34akz14xb5.ucarecd.net/' + res.file + '/' );
 			} else {
 				callback( null );
 			}
@@ -724,7 +724,7 @@
 		var section     = btn.closest( 'section' );
 		var categoriaId = parseInt( section.dataset.categoriaId, 10 );
 
-		if ( ! confirm( '¿Eliminar esta categoría?' ) ) return;
+		if ( ! confirm( 'Supprimer cette catégorie ?' ) ) return;
 
 		btn.disabled = true;
 
@@ -983,7 +983,7 @@
 
 			var grid = btn.closest( '.club-equipo-section' ).querySelector( '.club-equipo' );
 			grid.insertAdjacentHTML( 'beforeend', equipoItemHTML( res.data ) );
-			form.querySelector( '.equipo-add__descripcion' ).value = 'Foto de Grupo';
+			form.querySelector( '.equipo-add__descripcion' ).value = 'Photo de Groupe';
 		} );
 	}
 
@@ -991,7 +991,7 @@
 		var item      = btn.closest( '.club-equipo-item' );
 		var equipoId  = parseInt( btn.dataset.equipoId, 10 );
 
-		if ( ! confirm( '¿Eliminar esta foto de grupo?' ) ) return;
+		if ( ! confirm( 'Supprimer cette photo de groupe ?' ) ) return;
 
 		btn.disabled = true;
 
@@ -1072,14 +1072,14 @@
 				.replace( 'tw:text-gray-300', 'tw:text-gray-200' )
 				.replace( 'tw:hover:text-red-500', '' );
 			btn.classList.add( 'tw:cursor-not-allowed' );
-			btn.title = 'No se puede eliminar: tiene jugadores';
+			btn.title = 'Impossible de supprimer : la catégorie contient des joueurs';
 		} else {
 			btn.disabled = false;
 			btn.className = btn.className
 				.replace( 'tw:text-gray-200', 'tw:text-gray-300' )
 				.replace( 'tw:cursor-not-allowed', '' );
 			btn.classList.add( 'tw:hover:text-red-500' );
-			btn.title = 'Eliminar categoría';
+			btn.title = 'Supprimer la catégorie';
 		}
 	}
 
@@ -1114,7 +1114,7 @@
 		var badge = section.querySelector( '.club-jugadores-count' );
 		if ( ! badge ) return;
 		var n = list.querySelectorAll( '.club-jugador' ).length;
-		badge.textContent = n + ' jugador' + ( n !== 1 ? 'es' : '' );
+		badge.textContent = n + ' joueur' + ( n !== 1 ? 's' : '' );
 	}
 
 	function updateStatusDot( jugadorEl ) {
@@ -1123,7 +1123,7 @@
 		var hasNombreFoto = !! jugadorEl.dataset.nombreFoto;
 		dot.classList.toggle( 'tw:bg-green-400', hasNombreFoto );
 		dot.classList.toggle( 'tw:bg-amber-400', ! hasNombreFoto );
-		dot.title = hasNombreFoto ? 'Foto asignada' : 'Sin foto';
+		dot.title = hasNombreFoto ? 'Photo assignée' : 'Sans photo';
 		updateCategoriaStatusDot( jugadorEl.closest( 'section' ) );
 	}
 
@@ -1136,20 +1136,20 @@
 		dot.classList.remove( 'tw:bg-gray-300', 'tw:bg-red-400', 'tw:bg-amber-400', 'tw:bg-green-400' );
 		if ( total === 0 ) {
 			dot.classList.add( 'tw:bg-gray-300' );
-			dot.title = 'Sin jugadores';
+			dot.title = 'Aucun joueur';
 			return;
 		}
 		var conFoto = 0;
 		jugadores.forEach( function ( j ) { if ( j.dataset.nombreFoto ) conFoto++; } );
 		if ( conFoto === 0 ) {
 			dot.classList.add( 'tw:bg-red-400' );
-			dot.title = 'Ningún jugador tiene foto asignada';
+			dot.title = 'Aucun joueur n\'a de photo assignée';
 		} else if ( conFoto === total ) {
 			dot.classList.add( 'tw:bg-green-400' );
-			dot.title = 'Todos los jugadores tienen foto asignada';
+			dot.title = 'Tous les joueurs ont une photo assignée';
 		} else {
 			dot.classList.add( 'tw:bg-amber-400' );
-			dot.title = 'Algunos jugadores tienen foto asignada';
+			dot.title = 'Certains joueurs ont une photo assignée';
 		}
 	}
 
@@ -1170,43 +1170,43 @@
 			+ '<span class="drag-handle tw:shrink-0 tw:text-gray-300 tw:hover:text-gray-500 tw:transition-colors tw:cursor-grab tw:active:cursor-grabbing">'
 			+ '<svg class="tw:w-5 tw:h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>'
 			+ '</span>'
-			+ '<div class="jugador-foto-trigger tw:shrink-0 tw:w-10 tw:h-10 tw:rounded-full tw:overflow-hidden tw:bg-gray-200 tw:cursor-pointer tw:ring-2 tw:ring-transparent tw:hover:ring-blue-400 tw:transition-all" title="Subir foto">' + foto + '</div>'
+			+ '<div class="jugador-foto-trigger tw:shrink-0 tw:w-10 tw:h-10 tw:rounded-full tw:overflow-hidden tw:bg-gray-200 tw:cursor-pointer tw:ring-2 tw:ring-transparent tw:hover:ring-blue-400 tw:transition-all" title="Télécharger une photo">' + foto + '</div>'
 			+ '<div class="tw:flex-1 tw:min-w-0"><span class="jugador-nombre-display tw:text-sm tw:font-medium tw:text-gray-800">' + nombreCompleto + '</span>' + cargoHTML + nombreFotoHTML + '</div>'
-			+ '<button type="button" class="btn-toggle-foto tw:shrink-0 tw:text-gray-300 tw:hover:text-blue-500 tw:transition-colors' + toggleClass + '" title="Ver foto">'
+			+ '<button type="button" class="btn-toggle-foto tw:shrink-0 tw:text-gray-300 tw:hover:text-blue-500 tw:transition-colors' + toggleClass + '" title="Voir la photo">'
 			+ '<svg class="tw:w-4 tw:h-4 tw:transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>'
 			+ '</button>'
-			+ '<button type="button" class="btn-edit-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Editar jugador">'
+			+ '<button type="button" class="btn-edit-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Modifier le joueur">'
 			+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 0 1 2.828 2.828L11.828 15.828a2 2 0 0 1-1.414.586H7v-3.414a2 2 0 0 1 .586-1.414z"/></svg>'
 			+ '</button>'
-			+ '<button type="button" class="btn-move-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-indigo-500 tw:transition-colors" title="Mover a otra categoría">'
+			+ '<button type="button" class="btn-move-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-indigo-500 tw:transition-colors" title="Déplacer vers une autre catégorie">'
 			+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>'
 			+ '</button>'
-			+ '<button type="button" class="btn-delete-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-jugador-id="' + j.id + '" title="Eliminar jugador">'
+			+ '<button type="button" class="btn-delete-jugador tw:shrink-0 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-jugador-id="' + j.id + '" title="Supprimer le joueur">'
 			+ '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>'
 			+ '</button>'
-			+ '<span class="jugador-status-dot tw:shrink-0 tw:w-2 tw:h-2 tw:rounded-full ' + ( j.nombre_foto ? 'tw:bg-green-400' : 'tw:bg-amber-400' ) + '" title="' + ( j.nombre_foto ? 'Foto asignada' : 'Sin foto' ) + '"></span>'
+			+ '<span class="jugador-status-dot tw:shrink-0 tw:w-2 tw:h-2 tw:rounded-full ' + ( j.nombre_foto ? 'tw:bg-green-400' : 'tw:bg-amber-400' ) + '" title="' + ( j.nombre_foto ? 'Photo assignée' : 'Sans photo' ) + '"></span>'
 			+ '</div>'
 			+ '<div class="jugador-move-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-3 tw:bg-gray-50 tw:flex tw:items-center tw:gap-3">'
-			+ '<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Categoría:</label>'
+			+ '<label class="tw:text-xs tw:text-gray-500 tw:shrink-0">Catégorie :</label>'
 			+ '<select class="move-categoria-select tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none tw:bg-white"></select>'
-			+ '<button type="button" class="btn-confirm-move tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Mover</button>'
-			+ '<button type="button" class="btn-confirm-copy tw:bg-teal-600 tw:hover:bg-teal-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Copiar</button>'
-			+ '<button type="button" class="btn-cancel-move tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Cancelar</button>'
+			+ '<button type="button" class="btn-confirm-move tw:bg-indigo-600 tw:hover:bg-indigo-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Déplacer</button>'
+			+ '<button type="button" class="btn-confirm-copy tw:bg-teal-600 tw:hover:bg-teal-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Copier</button>'
+			+ '<button type="button" class="btn-cancel-move tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Annuler</button>'
 			+ '</div>'
 			+ '<div class="jugador-edit-panel tw:hidden tw:border-t tw:border-gray-100 tw:px-6 tw:py-4 tw:bg-gray-50">'
 			+ '<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-3 tw:gap-3">'
-			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre</label><input type="text" class="edit-nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( j.nombre ) + '"></div>'
-			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Apellidos</label><input type="text" class="edit-apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( j.apellidos || '' ) + '"></div>'
-			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Cargo</label><input type="text" class="edit-cargo tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( j.cargo || '' ) + '"></div>'
+			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Prénom</label><input type="text" class="edit-nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( j.nombre ) + '"></div>'
+			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nom</label><input type="text" class="edit-apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( j.apellidos || '' ) + '"></div>'
+			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Poste</label><input type="text" class="edit-cargo tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( j.cargo || '' ) + '"></div>'
 			+ '</div>'
 			+ '<div class="tw:mt-3">'
-			+ '<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre foto</label>'
-			+ '<input type="text" class="edit-nombre-foto tw:w-full tw:sm:w-64 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" maxlength="64" placeholder="ej. 9999.jpg" value="' + escAttr( j.nombre_foto || '' ) + '">'
-			+ '<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p>'
+			+ '<label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nom photo</label>'
+			+ '<input type="text" class="edit-nombre-foto tw:w-full tw:sm:w-64 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" maxlength="64" placeholder="ex. 9999.jpg" value="' + escAttr( j.nombre_foto || '' ) + '">'
+			+ '<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la photo arrive par d\'autres moyens, indiquez ici son nom de fichier (max. 32 caractères).</p>'
 			+ '</div>'
 			+ '<div class="tw:flex tw:gap-2 tw:mt-3">'
-			+ '<button type="button" class="btn-save-edit tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Guardar</button>'
-			+ '<button type="button" class="btn-cancel-edit tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Cancelar</button>'
+			+ '<button type="button" class="btn-save-edit tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Enregistrer</button>'
+			+ '<button type="button" class="btn-cancel-edit tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Annuler</button>'
 			+ '</div>'
 			+ '</div>'
 			+ '<div class="jugador-foto-expanded tw:hidden tw:px-6 tw:py-4">' + expandedContent + '</div>'
@@ -1223,12 +1223,12 @@
 			: CAMERA_PLACEHOLDER_HTML;
 
 		var clearBtnHTML = j.foto_url
-			? '<button type="button" class="btn-clear-equipo-foto tw:mt-1 tw:inline-flex tw:items-center tw:gap-1 tw:text-xs tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-equipo-id="' + j.id + '" title="Quitar foto">'
-				+ CLEAR_ICON + 'Quitar foto</button>'
+			? '<button type="button" class="btn-clear-equipo-foto tw:mt-1 tw:inline-flex tw:items-center tw:gap-1 tw:text-xs tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-equipo-id="' + j.id + '" title="Retirer la photo">'
+				+ CLEAR_ICON + 'Retirer la photo</button>'
 			: '';
 
 		return '<div class="club-equipo-item" data-equipo-id="' + j.id + '">'
-			+ '<div class="equipo-foto-trigger tw:aspect-video tw:rounded-lg tw:overflow-hidden tw:bg-gray-100 tw:cursor-pointer tw:ring-2 tw:ring-transparent tw:hover:ring-blue-400 tw:transition-all" title="Subir foto">'
+			+ '<div class="equipo-foto-trigger tw:aspect-video tw:rounded-lg tw:overflow-hidden tw:bg-gray-100 tw:cursor-pointer tw:ring-2 tw:ring-transparent tw:hover:ring-blue-400 tw:transition-all" title="Télécharger une photo">'
 			+ fotoContent
 			+ '</div>'
 			+ clearBtnHTML
@@ -1236,15 +1236,15 @@
 			+ '<span class="equipo-descripcion-display tw:w-full tw:text-xs tw:font-medium tw:text-gray-700 tw:uppercase tw:leading-snug">' + escHTML( j.descripcion ) + '</span>'
 			+ ( j.nombre_foto ? '<span class="equipo-nombre-foto-display tw:w-full tw:block tw:text-xs tw:text-gray-400">' + escHTML( j.nombre_foto ) + '</span>' : '' )
 			+ '<div class="tw:flex tw:items-center tw:shrink-0">'
-			+ '<button type="button" class="btn-edit-equipo tw:p-1 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Editar descripción">' + EDIT_ICON + '</button>'
-			+ '<button type="button" class="btn-delete-equipo tw:p-1 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-equipo-id="' + j.id + '" title="Eliminar">' + DELETE_ICON + '</button>'
+			+ '<button type="button" class="btn-edit-equipo tw:p-1 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Modifier la description">' + EDIT_ICON + '</button>'
+			+ '<button type="button" class="btn-delete-equipo tw:p-1 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-equipo-id="' + j.id + '" title="Supprimer">' + DELETE_ICON + '</button>'
 			+ '</div>'
 			+ '</div>'
 			+ '<div class="equipo-edit-panel tw:hidden tw:mt-2">'
 			+ '<input type="text" class="edit-equipo-descripcion tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-2 tw:py-1 tw:text-xs tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( j.descripcion ) + '">'
 			+ '<div class="tw:flex tw:gap-2 tw:mt-1.5">'
-			+ '<button type="button" class="btn-save-equipo-edit tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-xs tw:font-medium tw:px-3 tw:py-1 tw:rounded-lg tw:transition-colors">Guardar</button>'
-			+ '<button type="button" class="btn-cancel-equipo-edit tw:text-gray-400 tw:hover:text-gray-600 tw:text-xs tw:px-2 tw:py-1 tw:rounded-lg tw:transition-colors">Cancelar</button>'
+			+ '<button type="button" class="btn-save-equipo-edit tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-xs tw:font-medium tw:px-3 tw:py-1 tw:rounded-lg tw:transition-colors">Enregistrer</button>'
+			+ '<button type="button" class="btn-cancel-equipo-edit tw:text-gray-400 tw:hover:text-gray-600 tw:text-xs tw:px-2 tw:py-1 tw:rounded-lg tw:transition-colors">Annuler</button>'
 			+ '</div>'
 			+ '</div>'
 			+ '</div>';
@@ -1255,20 +1255,20 @@
 		var DELETE_ICON  = '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>';
 		var PLUS_ICON    = '<svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>';
 		var CHEVRON      = '<svg class="categoria-chevron tw:w-4 tw:h-4 tw:text-gray-400 tw:transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>';
-		var DRAG_HANDLE  = '<span class="drag-handle-categoria tw:pl-4 tw:pr-1 tw:shrink-0 tw:text-gray-300 tw:hover:text-gray-500 tw:transition-colors tw:cursor-grab tw:active:cursor-grabbing" title="Arrastrar para reordenar"><svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></span>';
+		var DRAG_HANDLE  = '<span class="drag-handle-categoria tw:pl-4 tw:pr-1 tw:shrink-0 tw:text-gray-300 tw:hover:text-gray-500 tw:transition-colors tw:cursor-grab tw:active:cursor-grabbing" title="Glisser pour réorganiser"><svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></span>';
 
 		var equipoSection = '<div class="club-equipo-section tw:px-6 tw:pt-4 tw:pb-3 tw:border-b tw:border-gray-100">'
-			+ '<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide tw:mb-3">Fotos de grupo</h3>'
+			+ '<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide tw:mb-3">Photos de groupe</h3>'
 			+ '<div class="club-equipo tw:grid tw:grid-cols-2 tw:sm:grid-cols-4 tw:gap-4" data-categoria-id="' + id + '"></div>'
 			+ '<div class="equipo-add-form tw:mt-3 tw:flex tw:items-center tw:gap-3">'
-			+ '<input type="text" class="equipo-add__descripcion tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Descripción (ej. Foto oficial temporada)" value="Foto de Grupo">'
+			+ '<input type="text" class="equipo-add__descripcion tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:focus:ring-1 tw:focus:ring-blue-500 tw:outline-none" placeholder="Description (ex. Photo officielle saison)" value="Photo de Groupe">'
 			+ '<button type="button" class="btn-add-equipo tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors" data-categoria-id="' + id + '">'
-			+ PLUS_ICON + 'Añadir foto</button>'
+			+ PLUS_ICON + 'Ajouter une photo</button>'
 			+ '</div>'
 			+ '</div>';
 
 		var membersHeading = '<div class="tw:px-6 tw:pt-4 tw:pb-0">'
-			+ '<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide">Fotos de los miembros</h3>'
+			+ '<h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide">Photos des membres</h3>'
 			+ '</div>';
 
 		return '<section class="tw:bg-white tw:rounded-xl tw:shadow-sm tw:border tw:border-gray-200 tw:overflow-hidden" data-categoria-id="' + id + '">'
@@ -1276,39 +1276,39 @@
 			+ DRAG_HANDLE
 			+ '<button type="button" class="btn-toggle-categoria tw:flex-1 tw:px-6 tw:py-4 tw:flex tw:items-center tw:justify-between tw:text-left tw:hover:bg-gray-100 tw:transition-colors">'
 			+ '<h2 class="tw:text-lg tw:font-semibold tw:text-gray-800">' + escHTML( descripcion ) + '</h2>'
-			+ '<div class="tw:flex tw:items-center tw:gap-3"><span class="club-jugadores-count tw:text-sm tw:text-gray-400">0 jugadores</span>' + CHEVRON + '</div>'
+			+ '<div class="tw:flex tw:items-center tw:gap-3"><span class="club-jugadores-count tw:text-sm tw:text-gray-400">0 joueur</span>' + CHEVRON + '</div>'
 			+ '</button>'
 			+ '<div class="tw:flex tw:items-center tw:gap-1 tw:pr-4">'
-			+ '<button type="button" class="btn-rename-categoria tw:p-2 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors tw:rounded" title="Renombrar categoría">' + RENAME_ICON + '</button>'
-			+ '<button type="button" class="btn-sort-alfabetico tw:p-2 tw:text-gray-300 tw:hover:text-blue-500 tw:transition-colors tw:rounded" title="Ordenar alfabéticamente"><svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0-3.75-3.75M17.25 21 21 17.25"/></svg></button>'
-			+ '<button type="button" class="btn-delete-categoria tw:p-2 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors tw:rounded" title="Eliminar categoría">' + DELETE_ICON + '</button>'
+			+ '<button type="button" class="btn-rename-categoria tw:p-2 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors tw:rounded" title="Renommer la catégorie">' + RENAME_ICON + '</button>'
+			+ '<button type="button" class="btn-sort-alfabetico tw:p-2 tw:text-gray-300 tw:hover:text-blue-500 tw:transition-colors tw:rounded" title="Trier par ordre alphabétique"><svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0-3.75-3.75M17.25 21 21 17.25"/></svg></button>'
+			+ '<button type="button" class="btn-delete-categoria tw:p-2 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors tw:rounded" title="Supprimer la catégorie">' + DELETE_ICON + '</button>'
 			+ '</div>'
 			+ '</div>'
 			+ '<div class="categoria-rename-panel tw:hidden tw:border-b tw:border-gray-200 tw:bg-gray-50 tw:px-6 tw:py-3 tw:flex tw:items-center tw:gap-3">'
 			+ '<input type="text" class="rename-descripcion tw:flex-1 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" value="' + escAttr( descripcion ) + '">'
-			+ '<button type="button" class="btn-save-rename tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Guardar</button>'
-			+ '<button type="button" class="btn-cancel-rename tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Cancelar</button>'
+			+ '<button type="button" class="btn-save-rename tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-1.5 tw:rounded-lg tw:transition-colors">Enregistrer</button>'
+			+ '<button type="button" class="btn-cancel-rename tw:text-gray-400 tw:hover:text-gray-600 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-colors">Annuler</button>'
 			+ '</div>'
 			+ '<div class="category-body tw:hidden">'
 			+ equipoSection
 			+ membersHeading
 			+ '<div class="club-jugadores tw:divide-y tw:divide-gray-100 tw:min-h-12" data-categoria-id="' + id + '"></div>'
-						+ '<div class="tw:border-t-2 tw:border-gray-200 tw:px-6 tw:py-3 tw:bg-gray-50"><h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide">Añadir jugadores</h3></div>'
+						+ '<div class="tw:border-t-2 tw:border-gray-200 tw:px-6 tw:py-3 tw:bg-gray-50"><h3 class="tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wide">Ajouter des joueurs</h3></div>'
 						+ '<div class="single-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4" data-categoria-id="' + id + '">'
 			+ '<div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-3 tw:gap-3">'
-			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre</label><input type="text" class="single-add__nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" placeholder="Nombre"></div>'
-			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Apellidos</label><input type="text" class="single-add__apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" placeholder="Apellidos"></div>'
-			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Cargo</label><input type="text" class="single-add__cargo tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" placeholder="Cargo"></div>'
+			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Prénom</label><input type="text" class="single-add__nombre tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" placeholder="Prénom"></div>'
+			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nom</label><input type="text" class="single-add__apellidos tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" placeholder="Nom"></div>'
+			+ '<div><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Poste</label><input type="text" class="single-add__cargo tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" placeholder="Poste"></div>'
 			+ '</div>'
-			+ '<div class="tw:mt-3"><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nombre foto</label>'
-			+ '<input type="text" class="single-add__nombre-foto tw:w-full tw:sm:w-64 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" maxlength="32" placeholder="ej. 9999.jpg">'
-			+ '<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la foto llega por otros medios, indica aquí su nombre de archivo (máx. 32 caracteres).</p></div>'
-			+ '<div class="tw:mt-3"><button type="button" class="btn-single-add tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors">' + PLUS_ICON + 'Añadir jugador</button></div>'
+			+ '<div class="tw:mt-3"><label class="tw:block tw:text-xs tw:text-gray-500 tw:mb-1">Nom photo</label>'
+			+ '<input type="text" class="single-add__nombre-foto tw:w-full tw:sm:w-64 tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-1.5 tw:text-sm tw:text-gray-800 tw:focus:border-blue-500 tw:outline-none" maxlength="32" placeholder="ex. 9999.jpg">'
+			+ '<p class="tw:mt-1 tw:text-xs tw:text-gray-400">Si la photo arrive par d\'autres moyens, indiquez ici son nom de fichier (max. 32 caractères).</p></div>'
+			+ '<div class="tw:mt-3"><button type="button" class="btn-single-add tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors">' + PLUS_ICON + 'Ajouter un joueur</button></div>'
 			+ '</div>'
 + ( albumClub.canBulkAdd
 				? '<div class="bulk-add tw:border-t tw:border-gray-200 tw:px-6 tw:py-4">'
-				+ '<textarea class="bulk-add__input tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 tw:placeholder-gray-400 tw:focus:border-blue-500 tw:outline-none tw:resize-y" rows="2" placeholder="Un jugador por línea: nombre, apellidos, cargo" data-categoria-id="' + id + '"></textarea>'
-				+ '<button type="button" class="btn-bulk-add tw:mt-2 tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors" data-categoria-id="' + id + '">' + PLUS_ICON + 'Añadir en bulk</button>'
+				+ '<textarea class="bulk-add__input tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 tw:placeholder-gray-400 tw:focus:border-blue-500 tw:outline-none tw:resize-y" rows="2" placeholder="Un joueur par ligne : prénom, nom, poste" data-categoria-id="' + id + '"></textarea>'
+				+ '<button type="button" class="btn-bulk-add tw:mt-2 tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-blue-600 tw:hover:bg-blue-700 tw:text-white tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:transition-colors" data-categoria-id="' + id + '">' + PLUS_ICON + 'Ajout en masse</button>'
 				+ '</div>'
 				: '' )
 			+ '</div>'
