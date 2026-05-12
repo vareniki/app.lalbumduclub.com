@@ -255,9 +255,12 @@ class Jugadores_Club {
 							<?php endif; ?>
 							<div class="tw:mt-1.5 tw:flex-col tw:items-start tw:justify-between tw:gap-1">
 								<span class="equipo-descripcion-display tw:w-full tw:text-xs tw:font-medium tw:text-gray-700 tw:uppercase tw:leading-snug"><?php echo esc_html( $equipo->descripcion ); ?></span>
-						<?php if ( $equipo->nombre_foto ) : ?>
-						<span class="equipo-nombre-foto-display tw:w-full tw:block tw:text-xs tw:text-gray-400"><?php echo esc_html( $equipo->nombre_foto ); ?></span>
-						<?php endif; ?>
+								<input type="text"
+								       class="equipo-nombre-foto-inline tw:w-full tw:border tw:border-gray-200 tw:rounded tw:px-2 tw:py-0.5 tw:text-xs tw:text-gray-500 tw:mt-1 tw:focus:border-blue-500 tw:outline-none tw:placeholder-gray-400"
+								       maxlength="64"
+								       placeholder="Nom photo…"
+								       value="<?php echo esc_attr( $equipo->nombre_foto ?? '' ); ?>"
+								       data-saved="<?php echo esc_attr( $equipo->nombre_foto ?? '' ); ?>">
 								<div class="tw:flex tw:items-center tw:shrink-0">
 									<button type="button" class="btn-edit-equipo tw:p-1 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Modifier la description">
 										<svg class="tw:w-3.5 tw:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -1880,6 +1883,8 @@ class Jugadores_Club {
 		$club_id     = absint( $_POST['club_id'] ?? 0 );
 		$equipo_id   = absint( $_POST['equipo_id'] ?? 0 );
 		$descripcion = sanitize_text_field( trim( $_POST['descripcion'] ?? '' ) );
+		$nombre_foto = sanitize_text_field( trim( $_POST['nombre_foto'] ?? '' ) );
+		$nombre_foto = substr( $nombre_foto, 0, 64 );
 
 		if ( ! $club_id || ! $equipo_id || '' === $descripcion ) {
 			wp_send_json_error( 'Données invalides.' );
@@ -1896,9 +1901,9 @@ class Jugadores_Club {
 		global $wpdb;
 		$updated = $wpdb->update(
 			$wpdb->prefix . 'club_equipo',
-			array( 'descripcion' => $descripcion ),
+			array( 'descripcion' => $descripcion, 'nombre_foto' => $nombre_foto ),
 			array( 'id' => $equipo_id ),
-			array( '%s' ),
+			array( '%s', '%s' ),
 			array( '%d' )
 		);
 
@@ -1906,7 +1911,7 @@ class Jugadores_Club {
 			wp_send_json_error( 'Erreur lors de la mise à jour.' );
 		}
 
-		wp_send_json_success( array( 'descripcion' => $descripcion ) );
+		wp_send_json_success( array( 'descripcion' => $descripcion, 'nombre_foto' => $nombre_foto ) );
 	}
 
 	/**

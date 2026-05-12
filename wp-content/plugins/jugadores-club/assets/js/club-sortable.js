@@ -447,6 +447,31 @@
 		}
 	} );
 
+	// Autosave del Nom photo inline de equipo al perder el foco.
+	container.addEventListener( 'focusout', function ( e ) {
+		var input = e.target.closest( '.equipo-nombre-foto-inline' );
+		if ( ! input ) return;
+
+		var value = input.value.trim();
+		if ( value === ( input.dataset.saved || '' ) ) return;
+
+		var item        = input.closest( '.club-equipo-item' );
+		var equipoId    = parseInt( item.dataset.equipoId, 10 );
+		var descripcion = item.querySelector( '.equipo-descripcion-display' ).textContent;
+
+		ajax( 'album_update_equipo', {
+			club_id:     clubId,
+			equipo_id:   equipoId,
+			descripcion: descripcion,
+			nombre_foto: value,
+		}, function ( res ) {
+			if ( res.success ) {
+				input.dataset.saved = res.data.nombre_foto;
+				input.value         = res.data.nombre_foto;
+			}
+		} );
+	} );
+
 	// ─── Helpers de nombre de foto ───────────────────────
 
 	/**
@@ -587,15 +612,11 @@
 				);
 			}
 
-			// Mostrar nombre_foto debajo de la descripción.
-			var nombreFotoSpan = equipoEl.querySelector( '.equipo-nombre-foto-display' );
-			if ( nombreFotoSpan ) {
-				nombreFotoSpan.textContent = fileName;
-			} else {
-				var descSpan = equipoEl.querySelector( '.equipo-descripcion-display' );
-				if ( descSpan ) {
-					descSpan.insertAdjacentHTML( 'afterend', '<span class="equipo-nombre-foto-display tw:block tw:text-xs tw:text-gray-400">' + escHTML( fileName ) + '</span>' );
-				}
+			// Actualizar el input inline de Nom photo.
+			var inlineInput = equipoEl.querySelector( '.equipo-nombre-foto-inline' );
+			if ( inlineInput ) {
+				inlineInput.value         = fileName;
+				inlineInput.dataset.saved = fileName;
 			}
 			equipoEl.dataset.nombreFoto = fileName;
 
@@ -1012,6 +1033,8 @@
 		var item        = panel.closest( '.club-equipo-item' );
 		var equipoId    = parseInt( item.dataset.equipoId, 10 );
 		var descripcion = panel.querySelector( '.edit-equipo-descripcion' ).value.trim();
+		var inlineInput = item.querySelector( '.equipo-nombre-foto-inline' );
+		var nombreFoto  = inlineInput ? inlineInput.value.trim() : '';
 
 		if ( ! descripcion ) return;
 
@@ -1021,6 +1044,7 @@
 			club_id:     clubId,
 			equipo_id:   equipoId,
 			descripcion: descripcion,
+			nombre_foto: nombreFoto,
 		}, function ( res ) {
 			btn.disabled = false;
 
@@ -1046,8 +1070,8 @@
 				var trigger = item.querySelector( '.equipo-foto-trigger' );
 				trigger.innerHTML = CAMERA_PLACEHOLDER_HTML;
 				btn.remove();
-				var nfSpan = item.querySelector( '.equipo-nombre-foto-display' );
-				if ( nfSpan ) nfSpan.remove();
+				var inlineNf = item.querySelector( '.equipo-nombre-foto-inline' );
+				if ( inlineNf ) { inlineNf.value = ''; inlineNf.dataset.saved = ''; }
 				item.dataset.nombreFoto = '';
 			} else {
 				btn.disabled = false;
@@ -1234,7 +1258,7 @@
 			+ clearBtnHTML
 			+ '<div class="tw:mt-1.5 tw:flex-col tw:items-start tw:justify-between tw:gap-1">'
 			+ '<span class="equipo-descripcion-display tw:w-full tw:text-xs tw:font-medium tw:text-gray-700 tw:uppercase tw:leading-snug">' + escHTML( j.descripcion ) + '</span>'
-			+ ( j.nombre_foto ? '<span class="equipo-nombre-foto-display tw:w-full tw:block tw:text-xs tw:text-gray-400">' + escHTML( j.nombre_foto ) + '</span>' : '' )
+			+ '<input type="text" class="equipo-nombre-foto-inline tw:w-full tw:border tw:border-gray-200 tw:rounded tw:px-2 tw:py-0.5 tw:text-xs tw:text-gray-500 tw:mt-1 tw:focus:border-blue-500 tw:outline-none tw:placeholder-gray-400" maxlength="64" placeholder="Nom photo…" value="' + escAttr( j.nombre_foto || '' ) + '" data-saved="' + escAttr( j.nombre_foto || '' ) + '">'
 			+ '<div class="tw:flex tw:items-center tw:shrink-0">'
 			+ '<button type="button" class="btn-edit-equipo tw:p-1 tw:text-gray-300 tw:hover:text-amber-500 tw:transition-colors" title="Modifier la description">' + EDIT_ICON + '</button>'
 			+ '<button type="button" class="btn-delete-equipo tw:p-1 tw:text-gray-300 tw:hover:text-red-500 tw:transition-colors" data-equipo-id="' + j.id + '" title="Supprimer">' + DELETE_ICON + '</button>'

@@ -37,16 +37,39 @@ add_filter( 'bricks/code/echo_function_names', function() {
 		'@^brx_' ];
 } );
 
-function brx_can_show_club_info() {
+add_filter( 'show_admin_bar', function( bool $show ): bool {
 	$user = wp_get_current_user();
+	if ( in_array( 'club', $user->roles, true ) ) {
+		return false;
+	}
+	return $show;
+} );
+
+function brx_is_archive() : int {
+	if ( is_archive() ) {
+		return 1;
+	}
+
+	return 0;
+}
+
+function brx_can_show_club_info() {
+	$user    = wp_get_current_user();
+	$post_id = get_queried_object_id();
 
 	if ( in_array( 'administrator', $user->roles, true ) ) {
 		return 1;
 	}
 
-	// El gestor tiene acceso a todos los clubs.
-	if ( in_array( 'gestor', $user->roles, true ) ) {
+	if ( in_array( 'supergestor', $user->roles, true ) ) {
 		return 1;
+	}
+
+	if ( in_array( 'gestor', $user->roles, true ) ) {
+		$clubs_asignados = jc_get_gestor_clubs( $user->ID );
+		if ( $post_id && in_array( $post_id, $clubs_asignados, true ) ) {
+			return 1;
+		}
 	}
 
 	if ( in_array( 'club', $user->roles, true ) ) {
